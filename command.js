@@ -13,6 +13,9 @@ var strings = require('./latte-strings');
 var lmodule = require('./latte-module');
 var records = require('./latte-records');
 var fs = require('fs');
+var io = require('./src/FileInfo');
+
+var FileInfo = io.FileInfo;
 
 
 //region Argument check
@@ -39,7 +42,7 @@ for(var i = 2; i < process.argv.length; i++){
 }
 
 if(typeof module_name == 'undefined' || module_name.indexOf('--') === 0){
-    console.log("\nUsage:\nnode make [options] module-name\n\nWhere module-name can be:" +
+    console.log("\nUsage:\nnxlatte [options] module-name\n" +
         "\nOptions" +
         "\n" +
         "\n--minimize\tMinimizes the javascript result using Google Closure Compiler" +
@@ -54,10 +57,37 @@ if(typeof module_name == 'undefined' || module_name.indexOf('--') === 0){
 }
 //endregion
 
+//region Echoing
+function echo(s){
+    if(verbose) {
+        console.log(s)
+    }
+}
+//endregion
+
+//region Read Config
+
+var config = {
+    modules: 'datalatte',
+    output: 'html/datalatte-files'
+};
+
+if(FileInfo.exists("xlatte.json", FileInfo.cwd)) {
+    config = (new FileInfo("xlatte.json")).readAsJSON();
+
+}else {
+    echo("No xlatte.json present. Using default configuration.");
+}
+
+var moduleDir = new FileInfo(path.join(config.modules, module_name), FileInfo.cwd);
+
+
+//endregion
+
 /**
  * Create module and records generators
  */
-var module = new lmodule.Module(module_name);
+var module = new lmodule.Module(moduleDir.path);
 var phpGenerator = new records.PhpRecordsGenerator(module);
 var tsGenerator = new records.TsRecordsGenerator(module);
 
@@ -72,9 +102,10 @@ var tsPath = path.join(module.path, 'ts');
 var supportPath = path.join(module.path, 'support');
 var tsIncludePath = path.join(supportPath, 'ts-include');
 var phpPath = path.join(module.path, 'php');
-var releasesPath = path.normalize(path.join(process.cwd(), 'html/datalatte-files/releases'));
+var releasesPath = path.normalize(path.join(process.cwd(), config.output,'releases'));
 var releasePath = path.join(releasesPath, module_name);
 var releaseSupportPath = path.join(releasePath, 'support');
+
 //endregion
 
 // If there is no php or ts directory, abort make
@@ -114,96 +145,154 @@ var done = function(){ if(verbose) console.log("Done") }
 // Perform copy of include files
 ts.copyIncludes(module);
 
+var activities = [
+    {
+        name: "Before Make",
+        code: function(callback){
+            module.beforeMake(callback);
+        }
+    },
+    {
+        name: "PHP Records",
+        code: function(callback){
+            phpGenerator.generateCode(function(phpCode){
 
-module.beforeMake(function(){
-
-    // 1. Generate php records code
-    doing("PHP Records\t\t\t")
-    phpGenerator.generateCode(function(phpCode){
-        done()
-
-        // 2. Write php records code
-
-        latte.writeFileIfNew(path.join(module.path, '/support/records.php'), phpCode, function(){
-
-
-            // 3. Generate TypeScript records code
-            doing("TypeScript Records\t")
-            tsGenerator.generateCode(phpPath, function(tsCode){
-
-                // 4. Write TypeScript records code
-                latte.writeFileIfNew(path.join(tsIncludePath, '/records.ts'), tsCode, function(){
-                    done();
-
-                    // 5. Create Strings files
-                    doing("Strings files\t\t");
-                    strings.createStringsFiles(langPath, tsDStrings, releasePath, function(){
-                        done()
-
-                        // 6. Generate CSS file
-                        doing("CSS\t\t\t\t\t");
-                        css.generateCss(tsPath, cssFile, function(){
-                            done()
-
-                            // 7. Compile JS file
-                            doing("Typescript compile\t");
-
-                            ts.compileDirectory(tsIncludePath, tsPath, jsFile, function(){
-                                done()
-
-                                // Move .js to release
-                                fs.renameSync(jsFile, jsFinalFile);
-
-                                // 8. Export files
-                                doing("Files export\t\t");
-                                module.exportFiles(releaseSupportPath, function(){
-                                    done()
-
-                                    // 9. Minimize
-                                    if(minimize) {
-                                        doing("Minimizing\t\t\t")
-                                        var gcc = require('./gcc-rest');
-                                        // Set Closure Compiler parameters
-                                        gcc.params({
-                                            compilation_level: "WHITESPACE_ONLY"
-                                        });
-
-                                        // Add files that should be compiled
-                                        gcc.addFiles(jsFinalFile);
-
-                                        // Replace code before compiling
-                                        gcc.replace(/'use strict';/g, '');
-
-                                        // Compile and write output to compiled.js
-                                        gcc.output(jsFinalFile)
-
-                                        gcc.callback = function(){
-                                            done()
-
-                                            // After make
-                                            module.afterMake(function(){
-
-                                                // End point if minimization
-
-                                            });
-                                        }
-                                    }else{
-                                        // After make
-                                        module.afterMake(function(){
-
-                                            // End point if no minimization
-
-                                        });
-                                    }
-                                })
-                            });
-                        });
-                    });
-                })
+                if(phpCode){
+                    latte.writeFileIfNewSync(path.join(module.path, '/support/records.php'), phpCode);
+                }
+                callback();
             });
-        })
+        }
+    },
+    {
+        name: "TypeScript Records",
+        code: function(callback){
+            tsGenerator.generateCode(phpPath, function(tsCode){
+                if('string' == typeof tsCode && tsCode.length.trim() > 0){
+                    latte.writeFileIfNewSync(path.join(tsIncludePath, '/records.ts'), tsCode);
+                }
+                callback();
+            });
+        }
+    },
+    {
+        name: "Strings files",
+        code: function(callback){
+            strings.createStringsFiles(langPath, tsDStrings, releasePath, function(){
+                callback();
+            });
+        }
+    },
+    {
+        name: "CSS",
+        code: function(callback){
+            css.generateCss(tsPath, cssFile, function(){
+                callback();
+            });
+        }
+    },
+    {
+        name: "View Extract",
+        code: function(callback){
 
+            if(FileInfo.exists('view', moduleDir)) {
+
+                // Extractor module
+                var xt = require('./src/ViewExtractor');
+
+                // Get class data
+                var infos = xt.ViewExtractor.instance.extractFolder(new FileInfo('view', moduleDir));
+
+                // Create content
+                var content = '';
+
+                // Concatenate views
+                for (var i = 0; i < infos.length; i++) {
+                    content += infos[i].source;
+                }
+
+                // Write views file
+                latte.writeFileIfNewSync(path.join(tsIncludePath, 'views.ts'), content);
+
+            }
+
+            callback();
+        }
+    },
+    {
+        name: "TypeScript Compile",
+        code: function(callback){
+            ts.compileDirectory(tsIncludePath, tsPath, jsFile, function(){
+
+                // Move .js to release
+                fs.renameSync(jsFile, jsFinalFile);
+
+                callback();
+            });
+        }
+    },
+    {
+        name: "Files Export",
+        code: function(callback){
+            module.exportFiles(releaseSupportPath, function(){
+                callback();
+            });
+        }
+    },
+    {
+        name: "Minimize",
+        code: function(callback){
+            if(minimize) {
+
+                var gcc = require('./gcc-rest');
+
+                // Set Closure Compiler parameters
+                gcc.params({
+                    compilation_level: "WHITESPACE_ONLY"
+                });
+
+                // Add files that should be compiled
+                gcc.addFiles(jsFinalFile);
+
+                // Replace code before compiling
+                gcc.replace(/'use strict';/g, '');
+
+                // Compile and write output to compiled.js
+                gcc.output(jsFinalFile);
+
+                // Go
+                gcc.callback = callback;
+            }
+        }
+    },
+    {
+        name: "After Make",
+        code: function(callback){
+            module.afterMake(callback);
+        }
+    }
+];
+
+//region Execute Activities
+
+var dispatchActivity = function(index){
+
+    // Base case
+    if(index >= activities.length) {
+        return;
+    }
+
+    // Let user now
+    if(true){
+        console.log(activities[index].name);
+    }
+
+    // Execute Activity
+    activities[index].code(function(){
+        dispatchActivity(index + 1)
     });
+};
 
-});
+dispatchActivity(0);
 
+//endregion

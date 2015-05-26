@@ -18,6 +18,13 @@
     "TypeScript",
     "MVC"
   ],
+
+  "dependencies": {
+    "cheerio" : "latest",
+    "mysql" : "latest",
+    "typescript" : "latest"
+  },
+
   "author": "Jose Menendez Poo <menendezpoo@gmail.com> (http://menendezpoo.com)",
   "license": "MIT",
   "bugs": {

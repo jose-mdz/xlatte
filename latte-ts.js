@@ -49,7 +49,7 @@ exports.copyIncludes = function(module){
         for(var i = 0; i < mincludes.length; i++){
 
             // Load included module
-            var mincluded = new mod.Module(mincludes[i]);
+            var mincluded = new mod.Module(path.join(module.folderPath, mincludes[i]));
             var files = latte.walkSync(mincluded.pathTsInclude, '.ts');
 
             for(var j = 0; j < files.length; j++){

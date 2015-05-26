@@ -65,10 +65,12 @@ exports.jsonAt = function(path){
  * @param name
  * @constructor
  */
-exports.Module = function(name){
+exports.Module = function(module_path){
 
-    this.name = name;
-    this.path = path.normalize(path.join(process.cwd(), 'datalatte/' + name));
+    this.name = path.basename(module_path);
+    this.path = path.normalize(module_path);
+    this.folderPath = path.dirname(this.path);
+    console.log(this.path)
     this.manifest = exports.manifestOf(this);
 
     this.pathLang = path.join(this.path, 'lang');
@@ -127,6 +129,7 @@ exports.Module.prototype.query = function(sql, callback){
 
     if(typeof this.manifest.connection['file'] == 'string') {
         var connectionPath = path.join(this.path, this.manifest.connection.file); //
+
         connectionData = exports.jsonAt(connectionPath);
     }
 

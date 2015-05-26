@@ -118,7 +118,7 @@ exports.walkSync = function(dir, extension) {
  *
  * @param {string} path         Path of file
  * @param {string} content      Contents of the file
- * @param {void} callback       Callback when done
+ * @param {function} callback       Callback when done
  */
 exports.writeFileIfNew = function(path, content, callback){
 
@@ -132,6 +132,20 @@ exports.writeFileIfNew = function(path, content, callback){
             callback.call(null);
         }
     });
+}
+
+/**
+ * Writes the file with fs.writeFile just in case file has new content compared to existing one
+ *
+ * @param {string} path         Path of file
+ * @param {string} content      Contents of the file
+ * @param {function} callback       Callback when done
+ */
+exports.writeFileIfNewSync = function(path, content){
+
+    if(!(fs.existsSync(path) && fs.readFileSync(path, 'utf8') == content)) {
+        fs.writeFileSync(path, content);
+    }
 }
 
 /**
