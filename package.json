@@ -1,0 +1,29 @@
+{
+  "name": "xlatte",
+  "version": "0.0.1",
+  "description": "Compiles latte projects",
+  "main": "index.js",
+  "bin": "./command.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:menendezpoo/xlatte.git"
+  },
+  "keywords": [
+    "Framework",
+    "Web",
+    "Apps",
+    "TypeScript",
+    "MVC"
+  ],
+  "author": "Jose Menendez Poo <menendezpoo@gmail.com> (http://menendezpoo.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/menendezpoo/xlatte/issues"
+  },
+  "homepage": "https://github.com/menendezpoo/xlatte",
+
+  "preferGlobal": true
+}
