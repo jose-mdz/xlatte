@@ -17,6 +17,25 @@ var io = require('./src/FileInfo');
 
 var FileInfo = io.FileInfo;
 
+function sprintf() {
+    var string = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        string[_i - 0] = arguments[_i];
+    }
+    var arg = 1, format = arguments[0], cur, next, result = [];
+    for (var i = 0; i < format.length; i++) {
+        cur = format.substr(i, 1);
+        next = i == format.length - 1 ? '' : format.substr(i + 1, 1);
+        if (cur == '%' && next == 's') {
+            result.push(arguments[arg++]);
+            i++;
+        }
+        else {
+            result.push(cur);
+        }
+    }
+    return result.join('');
+}
 
 //region Argument check
 
@@ -205,15 +224,20 @@ var activities = [
 
                 // Create content
                 var content = '';
+                var html = {};
 
                 // Concatenate views
                 for (var i = 0; i < infos.length; i++) {
                     content += infos[i].source;
+                    html[infos[i].className] = infos[i].html;
                 }
 
                 // Write views file
                 latte.writeFileIfNewSync(path.join(tsIncludePath, 'views.ts'), content);
 
+                // Write views sources
+                latte.writeFileIfNewSync(path.join(tsIncludePath, 'views_bank.ts'),
+                    sprintf("module latte{ \n    export var globalViewsBank = %s \n}", JSON.stringify(html, null, 4)));
             }
 
             callback();

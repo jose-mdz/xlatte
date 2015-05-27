@@ -8,12 +8,13 @@ import io = require('./FileInfo');
 export declare class ViewClassInfo {
     className: string;
     source: string;
+    html: string;
     /**
      * Creates the object
      * @param className
      * @param source
      */
-    constructor(className: string, source: string);
+    constructor(className: string, source: string, html: string);
 }
 /**
  * Class responsible for extracting Views on HTML Files, using method extract.
@@ -32,6 +33,7 @@ export declare class ViewExtractor {
     private moduleBase;
     private classBase;
     private staticClassBase;
+    private constructorBaseOld;
     private constructorBase;
     private propertyBase;
     private staticPropertyBase;

@@ -35,9 +35,10 @@ var ViewClassInfo = (function () {
      * @param className
      * @param source
      */
-    function ViewClassInfo(className, source) {
+    function ViewClassInfo(className, source, html) {
         this.className = className;
         this.source = source;
+        this.html = html;
     }
     return ViewClassInfo;
 })();
@@ -52,7 +53,8 @@ var ViewExtractor = (function () {
         this.moduleBase = "module latte{\n%s\n}";
         this.classBase = "\texport class %s extends %s{\n\t\t%s\n\t}";
         this.staticClassBase = "\texport class %s{\n\t\t%s\n\t}";
-        this.constructorBase = "constructor(){\n\t\t\tsuper(Element.outlet('[data-class=%s]'))\n\t\t}";
+        this.constructorBaseOld = "constructor(){\n\t\t\tsuper(Element.outlet('[data-class=%s]'))\n\t\t}";
+        this.constructorBase = "constructor(){\n\t\t\tsuper(Element.fromBank('%s'))\n\t\t}";
         this.propertyBase = "private _PROP:TYPE;\n\t\tget PROP():TYPE {\n\t\t\tif (!this._PROP) {\n\t\t\t\tthis._PROP = new TYPE(this.find('[data-property=PROP]'));\n\t\t\t}\n\t\t\treturn this._PROP;\n\t\t}";
         this.staticPropertyBase = "private static _PROP:TYPE;\n\t\tstatic get PROP():TYPE {\n\t\t\tif (!this._PROP) {\n\t\t\t\tthis._PROP = new TYPE(CLASS.getElement().find('[data-property=PROP]'));\n\t\t\t}\n\t\t\treturn this._PROP;\n\t\t}";
         this.staticElementProperty = "private static _PROP:TYPE;\n\t\tstatic getPROP():TYPE {\n\t\t\tif (!this._PROP) {\n\t\t\t\tthis._PROP = new TYPE(Element.find('[data-outlet=CLASS]'));\n\t\t\t}\n\t\t\treturn this._PROP;\n\t\t}";
@@ -264,7 +266,7 @@ var ViewExtractor = (function () {
             // Insert namespace
             var code = sprintf(this.moduleBase, classCode);
             // Add to result
-            result.push(new ViewClassInfo(className, code));
+            result.push(new ViewClassInfo(className, code, $.html(c)));
         }
         for (var i = 0; i < outlets.length; i++) {
             var c = outlets.eq(i);
@@ -281,7 +283,7 @@ var ViewExtractor = (function () {
             // Insert namespace
             var code = sprintf(this.moduleBase, classCode);
             // Add to result
-            result.push(new ViewClassInfo(className, code));
+            result.push(new ViewClassInfo(className, code, $.html(c)));
         }
         return result;
     };

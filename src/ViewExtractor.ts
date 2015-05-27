@@ -38,7 +38,7 @@ export class ViewClassInfo{
      * @param className
      * @param source
      */
-    constructor(public className: string, public source: string){}
+    constructor(public className: string, public source: string, public html: string){}
 }
 
 /**
@@ -71,7 +71,8 @@ export class ViewExtractor{
     private moduleBase = "module latte{\n%s\n}";
     private classBase = "\texport class %s extends %s{\n\t\t%s\n\t}";
     private staticClassBase = "\texport class %s{\n\t\t%s\n\t}";
-    private constructorBase = "constructor(){\n\t\t\tsuper(Element.outlet('[data-class=%s]'))\n\t\t}";
+    private constructorBaseOld = "constructor(){\n\t\t\tsuper(Element.outlet('[data-class=%s]'))\n\t\t}";
+    private constructorBase = "constructor(){\n\t\t\tsuper(Element.fromBank('%s'))\n\t\t}";
     private propertyBase = "private _PROP:TYPE;\n\t\tget PROP():TYPE {\n\t\t\tif (!this._PROP) {\n\t\t\t\tthis._PROP = new TYPE(this.find('[data-property=PROP]'));\n\t\t\t}\n\t\t\treturn this._PROP;\n\t\t}";
     private staticPropertyBase = "private static _PROP:TYPE;\n\t\tstatic get PROP():TYPE {\n\t\t\tif (!this._PROP) {\n\t\t\t\tthis._PROP = new TYPE(CLASS.getElement().find('[data-property=PROP]'));\n\t\t\t}\n\t\t\treturn this._PROP;\n\t\t}";
     private staticElementProperty = "private static _PROP:TYPE;\n\t\tstatic getPROP():TYPE {\n\t\t\tif (!this._PROP) {\n\t\t\t\tthis._PROP = new TYPE(Element.find('[data-outlet=CLASS]'));\n\t\t\t}\n\t\t\treturn this._PROP;\n\t\t}";
@@ -313,7 +314,7 @@ export class ViewExtractor{
             var code = sprintf(this.moduleBase, classCode);
 
             // Add to result
-            result.push(new ViewClassInfo(className, code));
+            result.push(new ViewClassInfo(className, code, $.html(c)));
 
         }
 
@@ -338,7 +339,7 @@ export class ViewExtractor{
             var code = sprintf(this.moduleBase, classCode);
 
             // Add to result
-            result.push(new ViewClassInfo(className, code));
+            result.push(new ViewClassInfo(className, code, $.html(c)));
 
         }
 
