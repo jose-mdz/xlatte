@@ -205,7 +205,7 @@ var activities = [
     {
         name: "CSS",
         code: function(callback){
-            css.generateCss(tsPath, cssFile, function(){
+            css.generateCss(moduleDir.path, cssFile, function(){
                 callback();
             });
         }
