@@ -70,7 +70,7 @@ exports.Module = function(module_path){
     this.name = path.basename(module_path);
     this.path = path.normalize(module_path);
     this.folderPath = path.dirname(this.path);
-    console.log(this.path)
+    //console.log(this.path)
     this.manifest = exports.manifestOf(this);
 
     this.pathLang = path.join(this.path, 'lang');

@@ -168,7 +168,7 @@ var activities = [
         name: "TypeScript Records",
         code: function(callback){
             tsGenerator.generateCode(phpPath, function(tsCode){
-                if('string' == typeof tsCode && tsCode.length.trim() > 0){
+                if('string' == typeof tsCode && tsCode.trim().length > 0){
                     latte.writeFileIfNewSync(path.join(tsIncludePath, '/records.ts'), tsCode);
                 }
                 callback();
@@ -283,7 +283,7 @@ var dispatchActivity = function(index){
     }
 
     // Let user now
-    if(true){
+    if(verbose){
         console.log(activities[index].name);
     }
 
