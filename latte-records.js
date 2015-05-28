@@ -432,19 +432,68 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
 
         printout("\n\t\t/* Name of Php record */");
         printout("\t\t_recordType: string = '" + recordName + "';");
-        printout("\n\t\t/* Name of Module where record lives*/");
+        printout("\n\t\t/* Name of Module where record lives */");
         printout("\t\t_moduleName: string = '" + _this.module.name + "';");
 
         for(var j = 0; j < tableRows.length; j++){
 
             var row = tableRows[j];
             var f = row.Field;
+            var fcamel = f.charAt(0).toUpperCase() + f.substr(1);
             fieldNames += f + ": this." + f + "" + (j == tableRows.length - 1 ? '' : ', ');
 
             printout("\n\t\t/**");
             printout("\t\t * Database field: " + row.Type);
             printout("\t\t */");
-            printout("\t\t" +  f + ': any;');
+            printout("\t\t_" +  f + ': any = null;');
+
+            //region Database Field Getter
+            printout("\n\t\t/**");
+            printout("\t\t * Gets or sets the value of the " + f + " field of type " + row.Type);
+            printout("\t\t */");
+            printout("\t\tget " + f + "(): any{");
+            printout("\t\t\treturn this._" + f + ";");
+            printout("\t\t}");
+            //endregion
+
+            //region Database Field Setter
+            printout("\n\t\t/**");
+            printout("\t\t * Gets or sets the value of the " + f + " field of type " + row.Type);
+            printout("\t\t */");
+            printout("\t\tset " + f + "(value: any){");
+            printout("\t\t\tvar changed: boolean = value !== this._" + f);
+            printout("\t\t\tthis._" + f + " = value;");
+            printout("\t\t\tif(changed){ this.on" + fcamel +"Changed(); }");
+            printout("\t\t}");
+            //endregion
+
+            //region Event
+            printout("\n\t\t/**");
+            printout("\t\t * Back field for event");
+            printout("\t\t */");
+            printout("\t\t_" +  f + 'Changed: LatteEvent;');
+
+            printout("\n\t\t/**");
+            printout("\t\t * Gets an event raised when the value of the " + f + " property changes");
+            printout("\t\t */");
+            printout("\t\tget " + f + "Changed(): LatteEvent{");
+            printout("\t\t\tif(!this._" + f + "Changed){ this._" + f + "Changed = new LatteEvent(this); }");
+            printout("\t\t\treturn this._" + f + "Changed;");
+            printout("\t\t}");
+
+            printout("\n\t\t/**");
+            printout("\t\t * Raises the <c>" + f + "Changed</c> event");
+            printout("\t\t */");
+            printout("\t\ton" + fcamel + "Changed(){");
+            printout("\t\t\tif(this._" + f + "Changed){");
+            printout("\t\t\t\tthis._" + f + "Changed.raise()");
+            printout("\t\t\t}");
+            printout("\t\t\tthis.onFieldValueChanged('" + f + "', this." + f + ")");
+            printout("\t\t}");
+
+            //endregion
+
+
             getFieldsBuffer.push(sprintf("'%s': this.%s", f, f));
 
             if(row.Extra == 'auto_increment'){
