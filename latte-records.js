@@ -426,7 +426,7 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
         var fieldNames = '';
         var className = exports.tableNameToClassName(table);
         var recordData = phpClassInfo;
-
+        var getFieldsBuffer = []
 
         printout("\texport class " + className + 'Base extends DataRecord{');
 
@@ -445,12 +445,15 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
             printout("\t\t * Database field: " + row.Type);
             printout("\t\t */");
             printout("\t\t" +  f + ': any;');
+            getFieldsBuffer.push(sprintf("'%s': this.%s", f, f));
 
             if(row.Extra == 'auto_increment'){
                 printout("\n\t\t/**\n\t\t* Gets the name of the autoincrement field\n\t\t**/\n\t\tonGetRecordIdName(): string { return '" + f + "'; }");
             }
 
         }
+
+        printout(sprintf("\n\t\t/**\n\t\t* Override. Gets data about the fields of the record.\n\t\t**/\n\t\tonGetFields(): any { return {%s}; }", getFieldsBuffer.join(', ')));
 
 //                    printout("\n\t\tgetFields(): any { return {" + fieldNames +  "}; } ");
 
