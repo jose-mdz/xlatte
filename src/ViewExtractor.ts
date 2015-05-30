@@ -72,7 +72,7 @@ export class ViewExtractor{
     private classBase = "\texport class %s extends %s{\n\t\t%s\n\t}";
     private staticClassBase = "\texport class %s{\n\t\t%s\n\t}";
     private constructorBaseOld = "constructor(){\n\t\t\tsuper(Element.outlet('[data-class=%s]'))\n\t\t}";
-    private constructorBase = "constructor(){\n\t\t\tsuper(Element.fromBank('%s'))\n\t\t}";
+    private constructorBase = "constructor(){\n\t\t\tsuper(Element.fromBank('%s'));\n\t\t\tthis.bind(this, true);\n\t\t}";
     private propertyBase = "private _PROP:TYPE;\n\t\tget PROP():TYPE {\n\t\t\tif (!this._PROP) {\n\t\t\t\tthis._PROP = new TYPE(this.querySelector('[data-property=PROP]'));\n\t\t\t}\n\t\t\treturn this._PROP;\n\t\t}";
     private staticPropertyBase = "private static _PROP:TYPE;\n\t\tstatic get PROP():TYPE {\n\t\t\tif (!this._PROP) {\n\t\t\t\tthis._PROP = new TYPE(CLASS.getElement().querySelector('[data-property=PROP]'));\n\t\t\t}\n\t\t\treturn this._PROP;\n\t\t}";
     private staticElementProperty = "private static _PROP:TYPE;\n\t\tstatic getPROP():TYPE {\n\t\t\tif (!this._PROP) {\n\t\t\t\tthis._PROP = new TYPE(Element.fromBank('CLASS'));\n\t\t\t}\n\t\t\treturn this._PROP;\n\t\t}";
@@ -295,8 +295,6 @@ export class ViewExtractor{
 
             // Remove sub classes
             c.find('*[data-class]').remove();
-
-            //echo("Class " + (i + 1) + ": " + className);
 
             // Properties
             var members = this.collectProperties(c, false);
