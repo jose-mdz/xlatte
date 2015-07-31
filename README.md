@@ -3,4 +3,4 @@ Node.js tool for compiling latte projects
 
 
 #Install
-npm install -g typescript
+`npm install -g typescript`
