@@ -237,7 +237,7 @@ var activities = [
 
                 // Write views sources
                 latte.writeFileIfNewSync(path.join(tsIncludePath, 'views_bank.ts'),
-                    sprintf("module latte{ \n    document['latte']['globalViewsBank'] = _extend( document['latte']['globalViewsBank'] || {}, %s) \n}", JSON.stringify(html, null, 4)));
+                    sprintf("module latte{ \n    window['latte']['globalViewsBank'] = _merge( window['latte']['globalViewsBank'] || {}, %s) \n}", JSON.stringify(html, null, 4)));
             }
 
             callback();
