@@ -1,6 +1,6 @@
 {
   "name": "xlatte",
-  "version": "0.0.6",
+  "version": "0.0.9",
   "description": "Compiles latte projects",
   "main": "index.js",
   "bin": "./command.js",
@@ -10,7 +10,7 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:menendezpoo/xlatte.git"
-  },
+  }, 
   "keywords": [
     "Framework",
     "Web",
