@@ -7,6 +7,7 @@
 var latte = require('./latte');
 var mod = require('./latte-module');
 var ref = require('./latte-reflection');
+var fs = require('fs');
 
 /**
  * Converts the name of a database table to a class name
@@ -303,20 +304,19 @@ exports.TsRecordsGenerator.prototype.getPhpClassesInfo = function(classesPath, c
 
     var phpClasses = {};
 
-    latte.walk(classesPath, '.php', function(err, files){
+    var files = fs.existsSync(classesPath) ?  latte.walkSync(classesPath, '.php') : [];
 
-        for(var i = 0; i < files.length; i++){
+    for(var i = 0; i < files.length; i++){
 
-            var info = ref.phpFileInfo(files[i]);
+        var info = ref.phpFileInfo(files[i]);
 
-            if(info && info.name) {
-                phpClasses[info.name] = info;
-            }
+        if(info && info.name) {
+            phpClasses[info.name] = info;
         }
+    }
 
-        callback.call(null, phpClasses);
+    callback.call(null, phpClasses);
 
-    });
 
 };
 

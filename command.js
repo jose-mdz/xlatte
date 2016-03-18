@@ -116,6 +116,7 @@ if(!fs.existsSync(module.path)) {
 }
 
 //region Folder paths
+
 var langPath = path.join(module.path, 'lang');
 var tsPath = path.join(module.path, 'ts');
 var supportPath = path.join(module.path, 'support');
@@ -166,6 +167,7 @@ ts.copyIncludes(module);
 
 var activities = [
     {
+        breakpoint: false,
         name: "Before Make",
         code: function(callback){
             module.beforeMake(callback);
@@ -193,6 +195,7 @@ var activities = [
                 callback();
             });
         }
+
     },
     {
         name: "Strings files",
@@ -312,9 +315,12 @@ var dispatchActivity = function(index){
     }
 
     // Execute Activity
-    activities[index].code(function(){
-        dispatchActivity(index + 1)
-    });
+
+        activities[index].code(function(){
+            if(!activities[index].breakpoint === true) {
+                dispatchActivity(index + 1)
+            }
+        });
 };
 
 dispatchActivity(0);

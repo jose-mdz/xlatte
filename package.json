@@ -1,6 +1,6 @@
 {
   "name": "xlatte",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Compiles latte projects",
   "main": "index.js",
   "bin": "./command.js",

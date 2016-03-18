@@ -9,7 +9,7 @@ var fs = require('fs');
 var latte = require('./latte');
 var mod = require('./latte-module');
 var path = require('path');
-var sys = require('sys');
+var sys = require('util');
 
 /**
  * Copies the necessary includes of the module
@@ -53,11 +53,20 @@ exports.copyIncludes = function(module){
             var files = latte.walkSync(mincluded.pathTsInclude, '.ts');
 
             for(var j = 0; j < files.length; j++){
-//                console.log("Including: " + files[j])
-                latte.fileCopy(
-                    files[j],
-                    path.join(module.pathTsInclude, path.basename(files[j]))
-                )
+                //console.log("Including: " + files[j])
+
+                var basename = path.basename(files[j]);
+
+                // Files that souldn't be included:
+                var exclusions = "records.ts;views.ts;views_bank.ts";
+
+                // Copy files
+                if(exclusions.indexOf(basename) < 0){
+                    latte.fileCopy(
+                        files[j],
+                        path.join(module.pathTsInclude, path.basename(basename))
+                    )
+                }
             }
 
         }
@@ -117,7 +126,7 @@ function compileTs(directory, outFile, callback){
 
     child = exec("tsc -d --target ES5 --out " + out_path + ' ' + all_path, function(error, stdout, stderr){
         if(stdout)
-            sys.print(stdout);
+            console.log(stdout);
 
         if(stderr){
             var err = stderr.replace(/\(([0-9]+),([0-9])+\):/g, ":$1:$2 ");
@@ -164,93 +173,90 @@ function createTsReferencesFile(includes, directory, callback){
     /**
      * 1. Find *.ts files
      */
-    latte.walk(ts_path, '.ts', function(err, results){
+    var results = fs.existsSync(ts_path) ? latte.walkSync(ts_path, '.ts') : [];
 
-        if(err) throw err;
+    var classInfo = [];
+    var ignoredFiles = [];
+    var served = 0;
 
-        var classInfo = [];
-        var ignoredFiles = [];
-        var served = 0;
-
-        /**
-         * 2. For each found file
-         */
-        for(var i = 0; i < results.length; i++){
+    /**
+     * 2. For each found file
+     */
+    for(var i = 0; i < results.length; i++){
 
 //            console.log("FOUND: " + results[i]);
 
-            /**
-             * 3. Get Information of file
-             */
-            getClassInfo(results[i], function(info){
+        /**
+         * 3. Get Information of file
+         */
+        getClassInfo(results[i], function(info){
 
-                if(info.isClass){
-                    classInfo.push(info);
-                }else{
-                    ignoredFiles.push(info.path);
+            if(info.isClass){
+                classInfo.push(info);
+            }else{
+                ignoredFiles.push(info.path);
+            }
+
+            // If all files served
+            if(results.length === ++served){
+
+                /**
+                 * 4. Find references
+                 */
+                findReferences(classInfo);
+
+                /**
+                 * 5. Sort by references
+                 */
+                sortByReferences(classInfo);
+
+                //console.log(JSON.stringify(classInfo))
+
+                var references = [];
+                var code = '';
+
+                /**
+                 * 6.0 Dump include files
+                 */
+                for(var j = 0; j < includes.length; j++)
+                    references.push(includes[j]);
+
+                /**
+                 * 6.1 Dump non-class files
+                 */
+                for(var j = 0; j < ignoredFiles.length; j++)
+                    references.push(ignoredFiles[j]);
+
+                /**
+                 * 7. Dump sorted paths
+                 */
+                for(var j = 0; j < classInfo.length; j++)
+                    references.push(classInfo[j].path);
+
+                /**
+                 * 8. Gather references for code
+                 */
+                for(var j = 0; j < references.length; j++){
+                    code += '\n' + '/// <reference path="' + path.resolve(references[j]) + '" />';
                 }
 
-                // If all files served
-                if(results.length === ++served){
+                /**
+                 * 9. Write references file
+                 */
+                latte.writeFileIfNew(all_path, code, function(ex){
+                    if(ex)throw ex;
 
-                    /**
-                     * 4. Find references
-                     */
-                    findReferences(classInfo);
-
-                    /**
-                     * 5. Sort by references
-                     */
-                    sortByReferences(classInfo);
-
-                    //console.log(JSON.stringify(classInfo))
-
-                    var references = [];
-                    var code = '';
-
-                    /**
-                     * 6.0 Dump include files
-                     */
-                    for(var j = 0; j < includes.length; j++)
-                        references.push(includes[j]);
-
-                    /**
-                     * 6.1 Dump non-class files
-                     */
-                    for(var j = 0; j < ignoredFiles.length; j++)
-                        references.push(ignoredFiles[j]);
-
-                    /**
-                     * 7. Dump sorted paths
-                     */
-                    for(var j = 0; j < classInfo.length; j++)
-                        references.push(classInfo[j].path);
-
-                    /**
-                     * 8. Gather references for code
-                     */
-                    for(var j = 0; j < references.length; j++){
-                        code += '\n' + '/// <reference path="' + path.resolve(references[j]) + '" />';
+                    if(typeof callback === 'function'){
+                        callback.call(this, all_path);
                     }
-
-                    /**
-                     * 9. Write references file
-                     */
-                    latte.writeFileIfNew(all_path, code, function(ex){
-                        if(ex)throw ex;
-
-                        if(typeof callback === 'function'){
-                            callback.call(this, all_path);
-                        }
-                    });
+                });
 
 
-                }
+            }
 
-            });
-        }
+        });
+    }
 
-    });
 
 }
 
