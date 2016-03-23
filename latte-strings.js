@@ -70,6 +70,15 @@ var createStringsFile = function(stringsPath, tsFilePath, outDirectory, callback
             }
         }
 
+        latte.writeFileIfNewSync(path.join(outDirectory, lang + ".js"), code);
+
+        latte.writeFileIfNewSync(tsFilePath, sprintf(interface_code, interface_lines.join('\n')));
+
+        if(typeof callback === 'function'){
+            callback.call(this);
+        }
+
+        /*
         // Write strings JS file
         latte.writeFileIfNew(path.join(outDirectory, lang + ".js"), code, function(err){
             if(err) throw err;
@@ -84,7 +93,7 @@ var createStringsFile = function(stringsPath, tsFilePath, outDirectory, callback
 
             });
         });
-
+        */
 
     });
 };
