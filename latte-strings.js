@@ -39,7 +39,7 @@ exports.createStringsFiles = function(stringsDirectory, tsFilePath, outDirectory
 
 
 };
-
+ 
 /**
  * Creates the string file of specified module path
  * @param path
