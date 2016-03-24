@@ -143,7 +143,7 @@ exports.writeFileIfNew = function(path, content, callback){
  */
 exports.writeFileIfNewSync = function(path, content){
 
-    if(!(fs.existsSync(path) && fs.readFileSync(path, 'utf8') != content)) {
+    if(!(fs.existsSync(path) && fs.readFileSync(path, 'utf8') == content)) {
         fs.writeFileSync(path, content);
     }
 }
