@@ -162,6 +162,7 @@ function compileTs(directory, outFile, callback){
  */
 function createTsReferencesFile(includes, directory, callback){
 
+
     var ts_path = directory;
     var all_path = path.join(directory, 'all.ts');
 

@@ -151,6 +151,8 @@ exports.PhpRecordsGenerator.prototype.generateStubs = function(callback){
                     }
                 }
 
+                callback.call(null);
+
             }else{
                 callback.call(null);
             }
