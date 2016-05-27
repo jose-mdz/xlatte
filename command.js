@@ -198,6 +198,14 @@ var activities = [
 
     },
     {
+        name: " Records Stubs",
+        code: function(callback){
+            phpGenerator.generateStubs(function(){
+                callback();
+            });
+        }
+    },
+    {
         name: "Strings files",
         code: function(callback){
             strings.createStringsFiles(langPath, tsDStrings, releasePath, function(){
