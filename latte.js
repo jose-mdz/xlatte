@@ -21,7 +21,7 @@ exports.supermkdir = function(dirpath){
         if(!dirs[i]) continue;
         cur += dirs[i] + path.sep;
 
-        if(!fs.existsSync(cur)){
+        if(cur.indexOf(':') < 0 && !fs.existsSync(cur)){
             fs.mkdirSync(cur);
 
         }
