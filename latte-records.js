@@ -129,7 +129,7 @@ exports.PhpRecordsGenerator.prototype.generateStubs = function(callback){
             // If records found
             if(records.length){
 
-                var hasTs = fs.existsSync(path.dirname(_this.pathTs));
+                var hasTs = fs.existsSync(path.dirname(_this.module.pathTs));
 
                 for(var i in records){
                     var record = records[i];
