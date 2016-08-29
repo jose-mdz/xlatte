@@ -419,6 +419,58 @@ exports.TsRecordsGenerator.prototype.getPhpClassesInfo = function(classesPath, c
 };
 
 /**
+ * Gets the TypeScript type of the MySQL type.
+ * e.g. VARCHAR goes to string, INT(1) goes to boolean, and so on.
+ * @param {string} mySqlType
+ * @return {string}
+ */
+exports.TsRecordsGenerator.getTsTypeOf = function(mySqlType){
+
+    var parts = mySqlType.split('(');
+    var name = parts[0].toLowerCase();
+    var size = parts.length > 1 ? parseInt(parts[1].replace(')', '')) : -1;
+
+    var d = {
+        'bit': 'number',
+        'tinyint': 'number',
+        'bool': 'number',
+        'boolean': 'number',
+        'smallint': 'number',
+        'mediumint': 'number',
+        'int': 'number',
+        'integer': 'number',
+        'bigint': 'number',
+        'decimal': 'number',
+        'dec': 'number',
+        'double': 'number',
+        'double precision': 'number',
+        'float': 'number',
+        'year': 'number',
+        'date': 'DateTime',
+        'datetime': 'DateTime',
+        'timestamp': 'TimeSpan',
+        'time': 'TimeSpan',
+        'char': 'string',
+        'varchar': 'string',
+        'text': 'string',
+        'mediumtext': 'string',
+        'enum': 'string'
+
+    };
+
+    if(name == 'int' && size == 1) {
+        return 'boolean';
+
+    }else if(d[name]) {
+        return d[name];
+
+    }else{
+        return 'string';
+    }
+
+};
+
+/**
  * Gets the TypeScript record of specified table.
  *
  * @param {string} table
@@ -524,7 +576,9 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
         var fieldNames = '';
         var className = exports.tableNameToClassName(table);
         var recordData = phpClassInfo;
-        var getFieldsBuffer = []
+        var getFieldsBuffer = [];
+        var nativeTypes = {};
+
 
         printout("\texport class " + className + 'Base extends DataRecord{');
 
@@ -538,18 +592,21 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
             var row = tableRows[j];
             var f = row.Field;
             var fcamel = f.charAt(0).toUpperCase() + f.substr(1);
+            var tsType = exports.TsRecordsGenerator.getTsTypeOf(row.Type);
             fieldNames += f + ": this." + f + "" + (j == tableRows.length - 1 ? '' : ', ');
+
+            nativeTypes[f] = row.Type;
 
             printout("\n\t\t/**");
             printout("\t\t * Database field: " + row.Type);
             printout("\t\t */");
-            printout("\t\t_" +  f + ': any = null;');
+            printout("\t\t_" +  f + ': ' + tsType + ' = null;');
 
             //region Database Field Getter
             printout("\n\t\t/**");
             printout("\t\t * Gets or sets the value of the " + f + " field of type " + row.Type);
             printout("\t\t */");
-            printout("\t\tget " + f + "(): any{");
+            printout("\t\tget " + f + "(): " + tsType + "{");
             printout("\t\t\treturn this._" + f + ";");
             printout("\t\t}");
             //endregion
@@ -558,7 +615,7 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
             printout("\n\t\t/**");
             printout("\t\t * Gets or sets the value of the " + f + " field of type " + row.Type);
             printout("\t\t */");
-            printout("\t\tset " + f + "(value: any){");
+            printout("\t\tset " + f + "(value: " + tsType + "){");
             printout("\t\t\tvar changed: boolean = value !== this._" + f);
             printout("\t\t\tthis._" + f + " = value;");
             printout("\t\t\tif(changed){ this.on" + fcamel +"Changed(); }");
@@ -604,6 +661,9 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
 
 //                    printout("\n\t\tgetFields(): any { return {" + fieldNames +  "}; } ");
 
+        // Dump Native types
+        printout(sprintf("\n\t\t/**\n\t\t* Declares the native types of the record.\n\t\t**/"));
+        printout(sprintf("\n\t\tstatic nativeTypes = %s;", JSON.stringify(nativeTypes)));
 
         if(recordData && recordData.methods){
             for(var method in recordData.methods){

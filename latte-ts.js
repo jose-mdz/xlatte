@@ -22,6 +22,10 @@ exports.copyIncludes = function(module){
         throw "module must be an instance of latte.Module";
     }
 
+    if(!fs.existsSync(module.pathTsInclude)) {
+        return;
+    }
+
     //region Remove existent files
     var existentFiles = latte.walkSync(module.pathTsInclude, '.ts');
     for(var i = 0; i < existentFiles.length; i++){
