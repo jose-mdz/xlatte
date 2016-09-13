@@ -65,9 +65,9 @@ export class FileInfo{
      * Joins the given name and the path of the file, if any.
      * @param name
      * @param f
-     * @returns {string}
+     * @returns {string}d
      */
-    private static joinPath(name: string, f: FileInfo = null){
+    static joinPath(name: string, f: FileInfo = null){
         var p = name;
 
         if(f instanceof FileInfo) {
@@ -75,6 +75,17 @@ export class FileInfo{
         }
 
         return p;
+    }
+
+    /**
+     * Concatenates the contents of the specified files into one file
+     * @param files
+     * @param outFile
+     */
+    static concatenate(files: FileInfo[], outFile: string){
+        for(var i in files){
+            fs.appendFileSync(outFile, files[i].readAsString())
+        }
     }
 
     /**
@@ -201,6 +212,14 @@ export class FileInfo{
     //region Methods
 
     /**
+     * Appends the data to the file
+     * @param data
+     */
+    appendString(data: string){
+        fs.appendFileSync(this.path, data);
+    }
+
+    /**
      * Copies the file to the specified destination folder
      *
      * @param destination
@@ -231,7 +250,6 @@ export class FileInfo{
         for (var i = 0; i < files.length; i++) {
 
             var f = new FileInfo(path.join(this.path, files[i]));
-
             if(f.extensionCheck(extension)) {
                 result.push(f);
             }
@@ -701,6 +719,94 @@ export class TsFileInfoSet{
         return this._nonClassFiles;
     }
 
+
+    //endregion
+
+}
+
+export class PhpFileInfo extends FileInfo{
+
+
+}
+
+/**
+ * Represents a set of php files in the latte project
+ */
+export class PhpFileInfoSet{
+
+    //region Static
+    /**
+     * Creates the set from finding php files in the specified folder
+     * @param folder
+     * @returns {PhpFileInfoSet}
+     */
+    static fromFolder(folder: FileInfo): PhpFileInfoSet{
+        let files = FileInfo.findFiles(folder, 'php');
+        let r = [];
+
+        files.forEach((f) => r.push(new PhpFileInfo(f.path)));
+
+        return new PhpFileInfoSet(r);
+    }
+    //endregion
+
+    constructor(files: PhpFileInfo[]){
+        this._files = files;
+    }
+
+    //region Methods
+    /**
+     * Makes the latte release to the specified path
+     * @param path
+     */
+    release(moduleName: string, out: FileInfo){
+
+        let eventFiles = [];
+        let outPath = FileInfo.joinPath(sprintf("%s.php", moduleName), out);
+
+        console.log(outPath);
+
+        if(FileInfo.exists(outPath)) {
+            (new FileInfo(outPath)).writeString('');
+        }
+
+        fs.appendFileSync(outPath, '<?php\n');
+
+        this.files.forEach((f: PhpFileInfo) => {
+            if(f.name.indexOf('_') === 0) {
+                eventFiles.push(f);
+            }else {
+                let contents = f.readAsString();
+                if(contents.indexOf('<?') === 0) {
+                    contents = contents.substr(contents.indexOf('\n') + 1);
+                }
+                fs.appendFileSync(outPath, contents);
+            }
+        });
+
+        eventFiles.forEach((f: PhpFileInfo) => {
+            FileInfo.createFile(FileInfo.joinPath(f.name, out), f.readAsString());
+        });
+
+        return new FileInfo(outPath);
+
+    }
+    //endregion
+
+    //region Properties
+    /**
+     * Property field
+     */
+    private _files: PhpFileInfo[];
+
+    /**
+     * Gets the files of the set
+     *
+     * @returns {PhpFileInfo[]}
+     */
+    get files(): PhpFileInfo[] {
+        return this._files;
+    }
 
     //endregion
 

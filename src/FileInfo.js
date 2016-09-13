@@ -1,11 +1,11 @@
 /// <reference path="node.d.ts" />
 /// <reference path="cheerio.d.ts" />
 /// <reference path="mysql.d.ts" />
-var __extends = this.__extends || function (d, b) {
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var fs = require('fs');
 var path = require('path');
@@ -56,7 +56,7 @@ var FileInfo = (function () {
      * Joins the given name and the path of the file, if any.
      * @param name
      * @param f
-     * @returns {string}
+     * @returns {string}d
      */
     FileInfo.joinPath = function (name, f) {
         if (f === void 0) { f = null; }
@@ -65,6 +65,16 @@ var FileInfo = (function () {
             p = path.join(f.path, p);
         }
         return p;
+    };
+    /**
+     * Concatenates the contents of the specified files into one file
+     * @param files
+     * @param outFile
+     */
+    FileInfo.concatenate = function (files, outFile) {
+        for (var i in files) {
+            fs.appendFileSync(outFile, files[i].readAsString());
+        }
     };
     /**
      * Creates the specified directory.
@@ -159,6 +169,13 @@ var FileInfo = (function () {
     };
     //endregion
     //region Methods
+    /**
+     * Appends the data to the file
+     * @param data
+     */
+    FileInfo.prototype.appendString = function (data) {
+        fs.appendFileSync(this.path, data);
+    };
     /**
      * Copies the file to the specified destination folder
      *
@@ -312,7 +329,7 @@ var FileInfo = (function () {
         configurable: true
     });
     return FileInfo;
-})();
+}());
 exports.FileInfo = FileInfo;
 /**
  * Represents a typescript file
@@ -377,7 +394,7 @@ var TsFileInfo = (function (_super) {
         configurable: true
     });
     return TsFileInfo;
-})(FileInfo);
+}(FileInfo));
 exports.TsFileInfo = TsFileInfo;
 /**
  * Represents a set of TsFile objects, and enables tsc compiling of them.
@@ -410,6 +427,7 @@ var TsFileInfoSet = (function () {
     TsFileInfoSet.byFolder = function (f) {
         var files = FileInfo.findFiles(f, 'ts');
         var ts = [];
+        // Fill ts array
         for (var i in files)
             ts.push(new TsFileInfo(files[i].path));
         return new TsFileInfoSet(ts);
@@ -453,6 +471,7 @@ var TsFileInfoSet = (function () {
         // Update References
         this.updateReferences();
         var r = [];
+        // Initially fill result
         for (var i in this.classFiles)
             r.push(this.classFiles[i]);
         // Sort now
@@ -466,10 +485,12 @@ var TsFileInfoSet = (function () {
      */
     TsFileInfoSet.prototype.getFilesInCompileOrder = function () {
         var r = [];
+        // Add non-class files
         for (var i in this.nonClassFiles)
             r.push(this.nonClassFiles[i]);
         // Get classes sorted by reference
         var sorted = this.getClassFilesSortedByReference();
+        // Add sorted class files
         for (var i in sorted)
             r.push(sorted[i]);
         return r;
@@ -520,6 +541,7 @@ var TsFileInfoSet = (function () {
         if (options.noImplicitAny === true) {
             actualOptions.push('--noImplicitAny');
         }
+        // Gather files
         for (var i in sorted) {
             files.push(sprintf('"%s"', sorted[i].path));
         }
@@ -577,5 +599,80 @@ var TsFileInfoSet = (function () {
         configurable: true
     });
     return TsFileInfoSet;
-})();
+}());
 exports.TsFileInfoSet = TsFileInfoSet;
+var PhpFileInfo = (function (_super) {
+    __extends(PhpFileInfo, _super);
+    function PhpFileInfo() {
+        _super.apply(this, arguments);
+    }
+    return PhpFileInfo;
+}(FileInfo));
+exports.PhpFileInfo = PhpFileInfo;
+/**
+ * Represents a set of php files in the latte project
+ */
+var PhpFileInfoSet = (function () {
+    //endregion
+    function PhpFileInfoSet(files) {
+        this._files = files;
+    }
+    //region Static
+    /**
+     * Creates the set from finding php files in the specified folder
+     * @param folder
+     * @returns {PhpFileInfoSet}
+     */
+    PhpFileInfoSet.fromFolder = function (folder) {
+        var files = FileInfo.findFiles(folder, 'php');
+        var r = [];
+        files.forEach(function (f) { return r.push(new PhpFileInfo(f.path)); });
+        return new PhpFileInfoSet(r);
+    };
+    //region Methods
+    /**
+     * Makes the latte release to the specified path
+     * @param path
+     */
+    PhpFileInfoSet.prototype.release = function (moduleName, out) {
+        var eventFiles = [];
+        var outPath = FileInfo.joinPath(sprintf("%s.php", moduleName), out);
+        console.log(outPath);
+        if (FileInfo.exists(outPath)) {
+            (new FileInfo(outPath)).writeString('');
+        }
+        fs.appendFileSync(outPath, '<?php\n');
+        this.files.forEach(function (f) {
+            if (f.name.indexOf('_') === 0) {
+                eventFiles.push(f);
+            }
+            else {
+                var contents = f.readAsString();
+                if (contents.indexOf('<?') === 0) {
+                    contents = contents.substr(contents.indexOf('\n') + 1);
+                }
+                fs.appendFileSync(outPath, contents);
+            }
+        });
+        eventFiles.forEach(function (f) {
+            FileInfo.createFile(FileInfo.joinPath(f.name, out), f.readAsString());
+        });
+        return new FileInfo(outPath);
+    };
+    Object.defineProperty(PhpFileInfoSet.prototype, "files", {
+        /**
+         * Gets the files of the set
+         *
+         * @returns {PhpFileInfo[]}
+         */
+        get: function () {
+            return this._files;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PhpFileInfoSet;
+}());
+exports.PhpFileInfoSet = PhpFileInfoSet;
+// Get arguments
+//var args = process.argv.slice(2); 

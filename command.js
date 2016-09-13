@@ -42,10 +42,12 @@ function sprintf() {
 var module_name;
 var minimize = false;
 var verbose = false;
+var release = false;
+var recordsAny = false;
 
 for(var i = 2; i < process.argv.length; i++){
 
-    var param = process.argv[i];
+    var param = process.argv[i].toLowerCase();
 
     if(param.charAt(0) == '-'){
 
@@ -54,6 +56,13 @@ for(var i = 2; i < process.argv.length; i++){
 
         }else if(param === '--verbose') {
             verbose  = true;
+
+        }else if(param == '--release') {
+            release = true;
+
+        }else if(param == '--recordsany') {
+            recordsAny = true;
+            global.recordsAny = true;
         }
     }else {
         module_name = param;
@@ -64,8 +73,10 @@ if(typeof module_name == 'undefined' || module_name.indexOf('--') === 0){
     console.log("\nUsage:\nnxlatte [options] module-name\n" +
         "\nOptions" +
         "\n" +
-        "\n--minimize\tMinimizes the javascript result using Google Closure Compiler" +
-        "\n--verbose \tEchoes information about what script is doing" +
+        "\n--minimize   \tMinimizes the javascript result using Google Closure Compiler" +
+        "\n--verbose    \tEchoes information about what script is doing" +
+        "\n--release    \tMakes a full release on the latte folder, including PHP files" +
+        "\n--recordsAny \tBackwards compat: Record properties will be of type any (TypeScript)" +
         "\n" +
         "\nModule Name: " +
         "\n\t_core      Core module" +
@@ -128,7 +139,7 @@ var releaseSupportPath = path.join(releasePath, 'support');
 
 //endregion
 
-// If there is no php or ts directory, abort make
+//region Abort if no PHP or TS path
 if(!fs.existsSync(tsPath) && !fs.existsSync(phpPath)){
     console.log("Make aborted: no php/ or ts/ directory indicates module is only stub.");
     process.exit(1)
@@ -161,6 +172,11 @@ latte.supermkdir(tsIncludePath);
 var doing = function(str){ if(verbose) process.stdout.write(str) }
 var done = function(){ if(verbose) console.log("Done") }
 //endregion
+
+// TEST
+// var phps = io.PhpFileInfoSet.fromFolder(new FileInfo(phpPath));
+// phps.release('fragment', FileInfo.cwd);
+// process.exit();
 
 // Perform copy of include files
 ts.copyIncludes(module);
@@ -264,6 +280,28 @@ var activities = [
 
                 callback();
             });
+        }
+    },
+    {
+        name: "PHP Concatenation",
+        code: function(){
+
+            // Delete phps from release folder
+            var phps = new FileInfo(releasePath);
+            phps.getFiles('php').forEach(function(f){ f.unlink(); });
+
+            if(!release) {
+                return;
+            }
+
+            // Release Php Files
+            var r = io.PhpFileInfoSet.fromFolder(new FileInfo(phpPath)).release(module.name, new FileInfo(releasePath));
+            var json = JSON.stringify(module.manifest);
+            var stringed = json.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+
+            // Append module.json info
+            r.appendString("\n\n$GLOBALS['module-json-" + module.name + "'] = '" + stringed + "';");
+
         }
     },
     {

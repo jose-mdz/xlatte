@@ -426,6 +426,10 @@ exports.TsRecordsGenerator.prototype.getPhpClassesInfo = function(classesPath, c
  */
 exports.TsRecordsGenerator.getTsTypeOf = function(mySqlType){
 
+    if(global.recordsAny) {
+        return 'any';
+    }
+
     var parts = mySqlType.split('(');
     var name = parts[0].toLowerCase();
     var size = parts.length > 1 ? parseInt(parts[1].replace(')', '')) : -1;
