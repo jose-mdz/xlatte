@@ -245,9 +245,21 @@ var FileInfo = (function () {
             flag: flag
         });
     };
-    Object.defineProperty(FileInfo.prototype, "extension", {
+    Object.defineProperty(FileInfo.prototype, "accessed", {
         //endregion
         //region Properties
+        /**
+         * Gets the last accessed time
+         *
+         * @returns {Date}
+         */
+        get: function () {
+            return new Date(String(this.stats.atime));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FileInfo.prototype, "extension", {
         /**
          * Gets the extension of the file, without the dot.
          *
@@ -324,6 +336,18 @@ var FileInfo = (function () {
                 this._stats = fs.statSync(this.path);
             }
             return this._stats;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FileInfo.prototype, "modified", {
+        /**
+         * Gets the modification date
+         *
+         * @returns {Date}
+         */
+        get: function () {
+            return new Date(String(this.stats.mtime));
         },
         enumerable: true,
         configurable: true
@@ -636,12 +660,10 @@ var PhpFileInfoSet = (function () {
      */
     PhpFileInfoSet.prototype.release = function (moduleName, out) {
         var eventFiles = [];
-        var outPath = FileInfo.joinPath(sprintf("%s.php", moduleName), out);
-        console.log(outPath);
-        if (FileInfo.exists(outPath)) {
-            (new FileInfo(outPath)).writeString('');
-        }
-        fs.appendFileSync(outPath, '<?php\n');
+        var outPath = PhpFileInfoSet.releasePath(moduleName, out);
+        // if(FileInfo.exists(outPath)) {
+        //     (new FileInfo(outPath)).writeString('');
+        // }
         this.files.forEach(function (f) {
             if (f.name.indexOf('_') === 0) {
                 eventFiles.push(f);
@@ -658,6 +680,15 @@ var PhpFileInfoSet = (function () {
             FileInfo.createFile(FileInfo.joinPath(f.name, out), f.readAsString());
         });
         return new FileInfo(outPath);
+    };
+    /**
+     * Gets
+     * @param moduleName
+     * @param out
+     * @returns {string}
+     */
+    PhpFileInfoSet.releasePath = function (moduleName, out) {
+        return FileInfo.joinPath(sprintf("%s.php", moduleName), out);
     };
     Object.defineProperty(PhpFileInfoSet.prototype, "files", {
         /**

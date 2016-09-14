@@ -8,6 +8,8 @@ var latte = require('./latte');
 var path = require('path');
 var fs = require('fs');
 var mysql = require('mysql');
+var io = require('./src/FileInfo');
+var FileInfo = io.FileInfo;
 
 var defaultManifest = {
     'version': '0.1'
@@ -36,7 +38,7 @@ exports.manifestOf = function(module){
     }
 
 
-}
+};
 
 /**
  * Returns the contents of the file as an object.
@@ -57,7 +59,7 @@ exports.jsonAt = function(path){
 
     return null;
 
-}
+};
 
 /**
  * Class module
@@ -79,7 +81,7 @@ exports.Module = function(module_path){
     this.pathTs = path.join(this.path, 'ts');
     this.pathTsInclude = path.join(this.pathSupport, 'ts-include');
 
-}
+};
 
 /**
  * Gets the names of the records of the module.
@@ -115,7 +117,41 @@ exports.Module.prototype.getRecords = function(callback){
  */
 exports.Module.prototype.hasConnection = function(){
     return typeof this.manifest.connection === 'object';
-}
+};
+
+/**
+ * Gets a value indicating if the module needs compilation,
+ * by analyzing files existence and modification date
+ */
+exports.Module.prototype.necessaryToCompile = function(releasePath){
+
+    if(!FileInfo.exists(releasePath)){
+        return true;
+    }
+
+    var filesSrc = FileInfo.findFiles(new FileInfo(this.path));
+    var newestSrc = new Date(1970, 1, 1);
+
+    filesSrc.forEach(function(f){
+        // console.log(f.modified + " > " + f.path);
+        if(f.modified > newestSrc) newestSrc = f.modified;
+    });
+
+    var filesRel = FileInfo.findFiles(new FileInfo(releasePath));
+    var newestRel = new Date(1970, 1, 1);
+
+    // console.log("---");
+
+    filesRel.forEach(function(f){
+        // console.log(f.modified + " > " + f.path);
+        if(f.modified > newestRel) newestRel = f.modified;
+    });
+
+    // console.log(newestSrc);
+    // console.log(newestRel);
+
+    return newestSrc > newestRel;
+};
 
 /**
  * Executes a query using the connection of the module
@@ -140,7 +176,7 @@ exports.Module.prototype.query = function(sql, callback){
     connection.query(sql, callback);
 
     connection.end();
-}
+};
 
 /**
  * Exports necessary files to specified path. If folder of path does not exist, it will be created
@@ -171,7 +207,7 @@ exports.Module.prototype.exportFiles = function(destPath, callback){
 
     callback.call(null);
 
-}
+};
 
 /**
  * Executes after make scripts if specified in metadata as 'after-make'
@@ -194,7 +230,7 @@ exports.Module.prototype.afterMake = function(callback){
     if(typeof callback == 'function')
         callback();
 
-}
+};
 
 /**
  * Executes before make scripts if specified in metadata as 'before-make'
@@ -216,4 +252,4 @@ exports.Module.prototype.beforeMake = function(callback){
     if(typeof callback == 'function')
         callback();
 
-}
+};

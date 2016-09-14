@@ -301,6 +301,15 @@ export class FileInfo{
     //region Properties
 
     /**
+     * Gets the last accessed time
+     *
+     * @returns {Date}
+     */
+    get accessed(): Date {
+        return new Date(String(this.stats.atime));
+    }
+
+    /**
      * Gets the extension of the file, without the dot.
      *
      * @returns {string}
@@ -332,7 +341,6 @@ export class FileInfo{
     get name():string {
         return path.basename(this.path);
     }
-
 
     /**
      * Property field
@@ -372,6 +380,15 @@ export class FileInfo{
             this._stats = fs.statSync(this.path);
         }
         return this._stats;
+    }
+
+    /**
+     * Gets the modification date
+     *
+     * @returns {Date}
+     */
+    get modified(): Date {
+        return new Date(String(this.stats.mtime));
     }
 
 
@@ -726,7 +743,6 @@ export class TsFileInfoSet{
 
 export class PhpFileInfo extends FileInfo{
 
-
 }
 
 /**
@@ -762,15 +778,11 @@ export class PhpFileInfoSet{
     release(moduleName: string, out: FileInfo){
 
         let eventFiles = [];
-        let outPath = FileInfo.joinPath(sprintf("%s.php", moduleName), out);
+        let outPath = PhpFileInfoSet.releasePath(moduleName, out);
 
-        console.log(outPath);
-
-        if(FileInfo.exists(outPath)) {
-            (new FileInfo(outPath)).writeString('');
-        }
-
-        fs.appendFileSync(outPath, '<?php\n');
+        // if(FileInfo.exists(outPath)) {
+        //     (new FileInfo(outPath)).writeString('');
+        // }
 
         this.files.forEach((f: PhpFileInfo) => {
             if(f.name.indexOf('_') === 0) {
@@ -790,6 +802,16 @@ export class PhpFileInfoSet{
 
         return new FileInfo(outPath);
 
+    }
+
+    /**
+     * Gets
+     * @param moduleName
+     * @param out
+     * @returns {string}
+     */
+    static releasePath(moduleName: string, out: FileInfo): string{
+        return FileInfo.joinPath(sprintf("%s.php", moduleName), out);
     }
     //endregion
 
