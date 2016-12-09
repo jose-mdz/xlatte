@@ -179,7 +179,6 @@ function createTsReferencesFile(includes, directory, callback){
      * 1. Find *.ts files
      */
     var results = fs.existsSync(ts_path) ? latte.walkSync(ts_path, '.ts') : [];
-
     var classInfo = [];
     var ignoredFiles = [];
     var served = 0;
@@ -223,8 +222,11 @@ function createTsReferencesFile(includes, directory, callback){
                 /**
                  * 6.0 Dump include files
                  */
-                for(var j = 0; j < includes.length; j++)
-                    references.push(includes[j]);
+                (includes || []).forEach(function(inc){
+                    references.push(inc);
+                });
+                // for(var j = 0; j < includes.length; j++)
+                //     references.push(includes[j]);
 
                 /**
                  * 6.1 Dump non-class files
