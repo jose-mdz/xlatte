@@ -124,11 +124,11 @@ function compileTs(directory, outFile, callback){
     var out_path = outFile;
     var all_path = path.join(directory, 'all.ts');
 
-    //tsc -d --removeComments --target ES5 --out $outputdir/latte.js $all
+    //tsc -d --removeComments --target ES6 --out $outputdir/latte.js $all
     var exec = require('child_process').exec;
     var child;
 
-    child = exec("tsc -d --target ES5 --out " + out_path + ' ' + all_path, function(error, stdout, stderr){
+    child = exec("tsc -d --target ES6 --out " + out_path + ' ' + all_path, function(error, stdout, stderr){
         if(stdout)
             console.log(stdout);
 
