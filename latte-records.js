@@ -656,7 +656,7 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
 
             getFieldsBuffer.push(sprintf("'%s': this.%s", f, f));
 
-            getFieldsBuffer.push(sprintf("'%s': '%s'", f, tsType));
+            getFieldTypesBuffer.push(sprintf("'%s': '%s'", f, tsType));
 
 
             if(row.Extra == 'auto_increment'){
@@ -669,7 +669,7 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
 //                    printout("\n\t\tgetFields(): any { return {" + fieldNames +  "}; } ");
 
         // onGetFieldTypes
-        printout(sprintf("\n\t\t/**\n\t\t* Override. Gets data about the type of fields of the record.\n\t\t**/\n\t\tonGetFieldTypes(): any { return {%s}; }", getFieldsBuffer.join(', ')));
+        printout(sprintf("\n\t\t/**\n\t\t* Override. Gets data about the type of fields of the record.\n\t\t**/\n\t\tonGetFieldTypes(): any { return {%s}; }", getFieldTypesBuffer.join(', ')));
 
         // Dump Native types
         printout(sprintf("\n\t\t/**\n\t\t* Declares the native types of the record.\n\t\t**/"));
