@@ -308,7 +308,7 @@ exports.TsRecordsGenerator = function(module){
 }
 
 /**
- * Generates the records code for the TypeScrpt classes of a datalatte module
+ * Generates the records code for the TypeScript classes of a datalatte module
  *
  * @param {string} phpClassesPath Path to the folder where php classes exist
  * @param callback
@@ -581,6 +581,7 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
         var className = exports.tableNameToClassName(table);
         var recordData = phpClassInfo;
         var getFieldsBuffer = [];
+        var getFieldTypesBuffer = [];
         var nativeTypes = {};
 
 
@@ -655,6 +656,9 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
 
             getFieldsBuffer.push(sprintf("'%s': this.%s", f, f));
 
+            getFieldsBuffer.push(sprintf("'%s': '%s'", f, tsType));
+
+
             if(row.Extra == 'auto_increment'){
                 printout("\n\t\t/**\n\t\t* Gets the name of the autoincrement field\n\t\t**/\n\t\tonGetRecordIdName(): string { return '" + f + "'; }");
             }
@@ -662,8 +666,10 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
         }
 
         printout(sprintf("\n\t\t/**\n\t\t* Override. Gets data about the fields of the record.\n\t\t**/\n\t\tonGetFields(): any { return {%s}; }", getFieldsBuffer.join(', ')));
-
 //                    printout("\n\t\tgetFields(): any { return {" + fieldNames +  "}; } ");
+
+        // onGetFieldTypes
+        printout(sprintf("\n\t\t/**\n\t\t* Override. Gets data about the type of fields of the record.\n\t\t**/\n\t\tonGetFieldTypes(): any { return {%s}; }", getFieldsBuffer.join(', ')));
 
         // Dump Native types
         printout(sprintf("\n\t\t/**\n\t\t* Declares the native types of the record.\n\t\t**/"));
