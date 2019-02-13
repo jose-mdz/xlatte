@@ -1,6 +1,6 @@
 {
   "name": "xlatte",
-  "version": "0.0.26",
+  "version": "0.0.31",
   "description": "Compiles latte projects",
   "main": "index.js",
   "bin": "./command.js",
@@ -10,7 +10,7 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:menendezpoo/xlatte.git"
-  }, 
+  },
   "keywords": [
     "Framework",
     "Web",
@@ -18,19 +18,17 @@
     "TypeScript",
     "MVC"
   ],
-
   "dependencies": {
-    "cheerio" : "latest",
-    "mysql" : "latest",
-    "typescript" : "latest"
+    "cheerio": "latest",
+    "mysql": "latest",
+    "typescript": "latest",
+    "user": "0.0.0"
   },
-
   "author": "Jose Menendez Poo <menendezpoo@gmail.com> (http://menendezpoo.com)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/menendezpoo/xlatte/issues"
   },
   "homepage": "https://github.com/menendezpoo/xlatte",
-
   "preferGlobal": true
 }

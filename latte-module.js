@@ -163,7 +163,7 @@ exports.Module.prototype.query = function(sql, callback){
 
     var connectionData = this.manifest.connection;
 
-    if(typeof this.manifest.connection['file'] == 'string') {
+    if(typeof this.manifest.connection['file'] === 'string') {
         var connectionPath = path.join(this.path, this.manifest.connection.file); //
 
         connectionData = exports.jsonAt(connectionPath);
