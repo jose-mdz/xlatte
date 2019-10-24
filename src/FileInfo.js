@@ -1,9 +1,11 @@
+"use strict";
 // import fs               = require('fs');
 // import path             = require('path');
 // import child_process    = require('child_process');
-import * as path from "path";
-import * as fs from "fs";
-import * as child_process from "child_process";
+Object.defineProperty(exports, "__esModule", { value: true });
+const path = require("path");
+const fs = require("fs");
+const child_process = require("child_process");
 /**
  * sprintf for only %s strings
  */
@@ -28,7 +30,7 @@ function sprintf(...string) {
  * This class can only represent existing files.
  * To create files use static methods createFile and createDirectory.
  */
-export class FileInfo {
+class FileInfo {
     //region Static
     /**
      * Joins the given name and the path of the file, if any.
@@ -295,10 +297,11 @@ export class FileInfo {
         return new Date(String(this.stats.mtime));
     }
 }
+exports.FileInfo = FileInfo;
 /**
  * Represents a typescript file
  */
-export class TsFileInfo extends FileInfo {
+class TsFileInfo extends FileInfo {
     /**
      * Gets the class info of the file
      *
@@ -342,10 +345,11 @@ export class TsFileInfo extends FileInfo {
         return this.classInfo.isClass;
     }
 }
+exports.TsFileInfo = TsFileInfo;
 /**
  * Represents a set of TsFile objects, and enables tsc compiling of them.
  */
-export class TsFileInfoSet {
+class TsFileInfoSet {
     //region Static
     /**
      * Creates a TS file set from the specified folder path
@@ -533,12 +537,14 @@ export class TsFileInfoSet {
         return this._nonClassFiles;
     }
 }
-export class PhpFileInfo extends FileInfo {
+exports.TsFileInfoSet = TsFileInfoSet;
+class PhpFileInfo extends FileInfo {
 }
+exports.PhpFileInfo = PhpFileInfo;
 /**
  * Represents a set of php files in the latte project
  */
-export class PhpFileInfoSet {
+class PhpFileInfoSet {
     //region Static
     /**
      * Creates the set from finding php files in the specified folder
@@ -601,5 +607,6 @@ export class PhpFileInfoSet {
         return this._files;
     }
 }
+exports.PhpFileInfoSet = PhpFileInfoSet;
 // Get arguments
 //var args = process.argv.slice(2);

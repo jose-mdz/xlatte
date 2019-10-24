@@ -28,7 +28,7 @@ function sprintf(...string): string{
     }
 
     return result.join('');
-};
+}
 
 /**
  * Represents a TypeScript code file

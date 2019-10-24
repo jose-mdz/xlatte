@@ -16,3 +16,8 @@ Example:
 mymodule must be a folder in the latte directory, and be composed of lang, php, ts, and view folders.
 
 
+# Compile FileInfo.ts
+```bash
+cd src
+tsc -t ES6 --module commonjs  FileInfo.ts
+```
