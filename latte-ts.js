@@ -5,11 +5,11 @@
  * Functions for compiling TypeScript of latte code
  */
 
-var fs = require('fs');
-var latte = require('./latte');
-var mod = require('./latte-module');
-var path = require('path');
-var sys = require('util');
+let fs = require('fs');
+let latte = require('./latte');
+let mod = require('./latte-module');
+let path = require('path');
+let sys = require('util');
 
 /**
  * Copies the necessary includes of the module
@@ -27,17 +27,19 @@ exports.copyIncludes = function(module){
     }
 
     //region Remove existent files
-    var existentFiles = latte.walkSync(module.pathTsInclude, '.ts');
-    for(var i = 0; i < existentFiles.length; i++){
-        fs.unlinkSync(existentFiles[i]);
+    let existentFiles = latte.walkSync(module.pathTsInclude, '.ts');
+    for(let i = 0; i < existentFiles.length; i++){
+        if(!existentFiles[i].endsWith('records.ts')){
+            fs.unlinkSync(existentFiles[i]);    
+        }
     }
     //endregion
 
     //region Copy specified ts-includes
-    var includes = module.manifest['ts-include'];
+    let includes = module.manifest['ts-include'];
 
     if(includes instanceof Array) {
-        for(var i = 0; i < includes.length; i++){
+        for(let i = 0; i < includes.length; i++){
             latte.fileCopy(
                 path.join(module.pathSupport, includes[i]),
                 path.join(module.pathTsInclude, path.basename(includes[i]))
@@ -47,22 +49,22 @@ exports.copyIncludes = function(module){
     //endregion
 
     //region Copy includes because of module-includes
-    var mincludes = module.manifest['module-include'];
+    let mincludes = module.manifest['module-include'];
 
     if(mincludes instanceof Array) {
-        for(var i = 0; i < mincludes.length; i++){
+        for(let i = 0; i < mincludes.length; i++){
 
             // Load included module
-            var mincluded = new mod.Module(path.join(module.folderPath, mincludes[i]));
-            var files = latte.walkSync(mincluded.pathTsInclude, '.ts');
+            let mincluded = new mod.Module(path.join(module.folderPath, mincludes[i]));
+            let files = latte.walkSync(mincluded.pathTsInclude, '.ts');
 
-            for(var j = 0; j < files.length; j++){
+            for(let j = 0; j < files.length; j++){
                 //console.log("Including: " + files[j])
 
-                var basename = path.basename(files[j]);
+                let basename = path.basename(files[j]);
 
                 // Files that souldn't be included:
-                var exclusions = "records.ts;views.ts;views_bank.ts";
+                let exclusions = "records.ts;views.ts;views_bank.ts";
 
                 // Copy files
                 if(exclusions.indexOf(basename) < 0){
@@ -121,23 +123,23 @@ exports.compileDirectory = function(tsIncludePath, directory, outFile, callback)
  * @param callback
  */
 function compileTs(directory, outFile, callback){
-    var out_path = outFile;
-    var all_path = path.join(directory, 'all.ts');
+    let out_path = outFile;
+    let all_path = path.join(directory, 'all.ts');
 
     //tsc -d --removeComments --target ES6 --out $outputdir/latte.js $all
-    var exec = require('child_process').exec;
-    var child;
+    let exec = require('child_process').exec;
+    let child;
 
     child = exec("tsc -d --target ES6 --out " + out_path + ' ' + all_path, function(error, stdout, stderr){
         if(stdout)
             console.log(stdout);
 
         if(stderr){
-            var err = stderr.replace(/\(([0-9]+),([0-9])+\):/g, ":$1:$2 ");
+            let err = stderr.replace(/\(([0-9]+),([0-9])+\):/g, ":$1:$2 ");
 
-            var parts = err.split("\n");
+            let parts = err.split("\n");
 
-            for(var i = 0; i < parts.length; i++){
+            for(let i = 0; i < parts.length; i++){
                 if(parts[i].trim()){
                     parts[i] = "(" + (i + 1) + ") at " + parts[i];
                 }
@@ -167,8 +169,8 @@ function compileTs(directory, outFile, callback){
 function createTsReferencesFile(includes, directory, callback){
 
 
-    var ts_path = directory;
-    var all_path = path.join(directory, 'all.ts');
+    let ts_path = directory;
+    let all_path = path.join(directory, 'all.ts');
 
     // Remove previously created references file
     if(fs.existsSync(all_path)){
@@ -178,15 +180,15 @@ function createTsReferencesFile(includes, directory, callback){
     /**
      * 1. Find *.ts files
      */
-    var results = fs.existsSync(ts_path) ? latte.walkSync(ts_path, '.ts') : [];
-    var classInfo = [];
-    var ignoredFiles = [];
-    var served = 0;
+    let results = fs.existsSync(ts_path) ? latte.walkSync(ts_path, '.ts') : [];
+    let classInfo = [];
+    let ignoredFiles = [];
+    let served = 0;
 
     /**
      * 2. For each found file
      */
-    for(var i = 0; i < results.length; i++){
+    for(let i = 0; i < results.length; i++){
 
 //            console.log("FOUND: " + results[i]);
 
@@ -216,8 +218,8 @@ function createTsReferencesFile(includes, directory, callback){
 
                 //console.log(JSON.stringify(classInfo))
 
-                var references = [];
-                var code = '';
+                let references = [];
+                let code = '';
 
                 /**
                  * 6.0 Dump include files
@@ -225,25 +227,25 @@ function createTsReferencesFile(includes, directory, callback){
                 (includes || []).forEach(function(inc){
                     references.push(inc);
                 });
-                // for(var j = 0; j < includes.length; j++)
+                // for(let j = 0; j < includes.length; j++)
                 //     references.push(includes[j]);
 
                 /**
                  * 6.1 Dump non-class files
                  */
-                for(var j = 0; j < ignoredFiles.length; j++)
+                for(let j = 0; j < ignoredFiles.length; j++)
                     references.push(ignoredFiles[j]);
 
                 /**
                  * 7. Dump sorted paths
                  */
-                for(var j = 0; j < classInfo.length; j++)
+                for(let j = 0; j < classInfo.length; j++)
                     references.push(classInfo[j].path);
 
                 /**
                  * 8. Gather references for code
                  */
-                for(var j = 0; j < references.length; j++){
+                for(let j = 0; j < references.length; j++){
                     code += '\n' + '/// <reference path="' + path.resolve(references[j]) + '" />';
                 }
 
@@ -286,7 +288,7 @@ function endsWith(string, postfix){
  * @param infos List of all classes info
  * @returns {boolean}
  */
-var _extends = function(baseClassInfo, superClassInfo, infos){
+let _extends = function(baseClassInfo, superClassInfo, infos){
 
     if(!baseClassInfo) return false;
 
@@ -316,13 +318,13 @@ var _extends = function(baseClassInfo, superClassInfo, infos){
  */
 function findReferences(infos){
 
-    var metas = {};
+    let metas = {};
 
-    for(var j = 0; j < infos.length; j++) metas[infos[j].className] = infos[j];
+    for(let j = 0; j < infos.length; j++) metas[infos[j].className] = infos[j];
 
     // Time to Count references
-    for(var j = 0; j < infos.length; j++){
-        for(var k = 0; k < infos.length; k++){
+    for(let j = 0; j < infos.length; j++){
+        for(let k = 0; k < infos.length; k++){
             if(_extends(infos[k], infos[j], metas)){
                 infos[j].references++;
             }
@@ -343,7 +345,7 @@ function getClassInfo(path, callback){
     // Read file
     fs.readFile(path, 'utf8', function(err, data){
 
-        var result = {
+        let result = {
             isClass: false,
             path: path,
             source: data
@@ -352,8 +354,8 @@ function getClassInfo(path, callback){
         if(!err){
 
             // Get matches
-//            var matches = data.match(/export\s+class\s+(\w*)(\s+extends\s+([\w|\.]*))?/i);
-            var matches = data.match(/export\s+class\s+(\w*)<[\w\s,]*>(\s+extends\s+([\w|\.]*))<[\w\s,]*>?/i);
+//            let matches = data.match(/export\s+class\s+(\w*)(\s+extends\s+([\w|\.]*))?/i);
+            let matches = data.match(/export\s+class\s+(\w*)<[\w\s,]*>(\s+extends\s+([\w|\.]*))<[\w\s,]*>?/i);
 
             if(matches === null) {
                 matches = data.match(/export\s+class\s+(\w*)<[\w\s,]*>(\s+extends\s+([\w|\.]*))/i);
@@ -383,9 +385,9 @@ function getClassInfo(path, callback){
                 // Get properties
                 matches = data.match(/get\s+\w+\s*\(\s*\)\s*:\s*[\w<>\.]+/g);
 
-                for(var i in matches){
-                    var match = matches[i];
-                    var parts = match.match(/get\s+(\w+)\s*\(\s*\)\s*:\s*([\w<>\.]+)/i);
+                for(let i in matches){
+                    let match = matches[i];
+                    let parts = match.match(/get\s+(\w+)\s*\(\s*\)\s*:\s*([\w<>\.]+)/i);
 
                     if(parts.length >= 2){
                         // Part 0 is match, Part 1 is first group (property name)
@@ -411,15 +413,15 @@ function getClassInfo(path, callback){
  */
 function sortByReferences(infos){
     // Bubble sort'em
-    var swapped;
+    let swapped;
     do{
 
         swapped = false;
 
-        for(var j = 0; j < infos.length - 1; j++){
+        for(let j = 0; j < infos.length - 1; j++){
 
             if( infos[j + 1].references > infos[j].references ){
-                var tmp = infos[j];
+                let tmp = infos[j];
                 infos[j] = infos[j+1];
                 infos[j+1] = tmp;
                 swapped = true;
