@@ -4,14 +4,14 @@
  * Loads module metadata
  */
 
-var latte = require('./latte');
-var path = require('path');
-var fs = require('fs');
-var mysql = require('mysql');
-var io = require('./src/FileInfo');
-var FileInfo = io.FileInfo;
+const latte = require('./latte');
+const path = require('path');
+const fs = require('fs');
+const mysql = require('mysql');
+const io = require('./src/FileInfo');
+const FileInfo = io.FileInfo;
 
-var defaultManifest = {
+let defaultManifest = {
     'version': '0.1'
 };
 
@@ -22,10 +22,10 @@ var defaultManifest = {
 exports.manifestOf = function(module){
 
     //Create path to manifest
-    var manifestPath = path.join(module.path, 'module.json');
+    let manifestPath = path.join(module.path, 'module.json');
 
     // Load manifest
-    var manifest = exports.jsonAt(manifestPath);
+    let manifest = exports.jsonAt(manifestPath);
 
     if(manifest) {
         return manifest;
@@ -51,10 +51,12 @@ exports.jsonAt = function(path){
     if(fs.existsSync(path)){
 
         // Read manifest
-        var data = fs.readFileSync(path, 'utf8');
+        let data = fs.readFileSync(path, 'utf8');
 
         return JSON.parse(data);
 
+    }else{
+        console.warn("File does not exist: " + path);
     }
 
     return null;
@@ -98,9 +100,9 @@ exports.Module.prototype.getRecords = function(callback){
         console.warn("manifest.records not present. Getting all tables of database.");
 
         this.module.query("show tables", function(err, rows, fields){
-            var r = [];
+            let r = [];
 
-            for(var i = 0; i < rows.length; i++){
+            for(let i = 0; i < rows.length; i++){
                 r.push(rows[i][fields[0].name]);
             }
 
@@ -129,16 +131,16 @@ exports.Module.prototype.necessaryToCompile = function(releasePath){
         return true;
     }
 
-    var filesSrc = FileInfo.findFiles(new FileInfo(this.path));
-    var newestSrc = new Date(1970, 1, 1);
+    let filesSrc = FileInfo.findFiles(new FileInfo(this.path));
+    let newestSrc = new Date(1970, 1, 1);
 
     filesSrc.forEach(function(f){
         // console.log(f.modified + " > " + f.path);
         if(f.modified > newestSrc) newestSrc = f.modified;
     });
 
-    var filesRel = FileInfo.findFiles(new FileInfo(releasePath));
-    var newestRel = new Date(1970, 1, 1);
+    let filesRel = FileInfo.findFiles(new FileInfo(releasePath));
+    let newestRel = new Date(1970, 1, 1);
 
     // console.log("---");
 
@@ -161,15 +163,16 @@ exports.Module.prototype.necessaryToCompile = function(releasePath){
  */
 exports.Module.prototype.query = function(sql, callback){
 
-    var connectionData = this.manifest.connection;
+    let connectionData = this.manifest.connection;
 
     if(typeof this.manifest.connection['file'] === 'string') {
-        var connectionPath = path.join(this.path, this.manifest.connection.file); //
+        let connectionPath = path.join(this.path, this.manifest.connection.file); //
 
         connectionData = exports.jsonAt(connectionPath);
+
     }
 
-    var connection = mysql.createConnection(connectionData);
+    let connection = mysql.createConnection(connectionData);
 
     connection.connect();
 
@@ -185,21 +188,21 @@ exports.Module.prototype.query = function(sql, callback){
  */
 exports.Module.prototype.exportFiles = function(destPath, callback){
 
-    var files = [];
-    var fileAggegators = "ua-include-js,ua-include-css,release-export".split(',');
+    let files = [];
+    let fileAggegators = "ua-include-js,ua-include-css,release-export".split(',');
 
     // Collect files
-    for(var i in fileAggegators){
-        var aggregator = fileAggegators[i];
+    for(let i in fileAggegators){
+        let aggregator = fileAggegators[i];
 
         if(this.manifest[aggregator] instanceof Array) {
             files = files.concat(this.manifest[aggregator]);
         }
     }
 
-    for(var i = 0; i < files.length; i++){
-        var origin = path.join(path.join(this.path, 'support/'), files[i]);
-        var destination = path.join(destPath, files[i]);
+    for(let i = 0; i < files.length; i++){
+        let origin = path.join(path.join(this.path, 'support/'), files[i]);
+        let destination = path.join(destPath, files[i]);
 
         latte.fileCopy(origin, destination);
 
@@ -217,10 +220,10 @@ exports.Module.prototype.afterMake = function(callback){
 
     if(this.manifest['after-make'] instanceof  Array){
 
-        for (var i = 0; i < this.manifest['after-make'].length; i++) {
-            var script = this.manifest['after-make'][i];
+        for (let i = 0; i < this.manifest['after-make'].length; i++) {
+            let script = this.manifest['after-make'][i];
 
-            var origin = path.join(path.join(this.path, 'support/'), script);
+            let origin = path.join(path.join(this.path, 'support/'), script);
 
             require(origin);
         }
@@ -240,9 +243,9 @@ exports.Module.prototype.beforeMake = function(callback){
 
     if(this.manifest['before-make'] instanceof  Array){
 
-        for (var i = 0; i < this.manifest['before-make'].length; i++) {
-            var script = this.manifest['before-make'][i];
-            var origin = path.join(path.join(this.path, 'support/'), script);
+        for (let i = 0; i < this.manifest['before-make'].length; i++) {
+            let script = this.manifest['before-make'][i];
+            let origin = path.join(path.join(this.path, 'support/'), script);
 
             require(origin);
         }

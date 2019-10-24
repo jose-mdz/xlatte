@@ -4,11 +4,11 @@
  * Generates Records files for datalatte code
  */
 
-var latte = require('./latte');
-var mod = require('./latte-module');
-var ref = require('./latte-reflection');
-var fs = require('fs');
-var path = require('path');
+const latte = require('./latte');
+const mod = require('./latte-module');
+const ref = require('./latte-reflection');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * Converts the name of a database table to a class name
@@ -17,12 +17,12 @@ var path = require('path');
  * @returns {string}
  */
 exports.tableNameToClassName = function (tableName){
-    var r = '';
-    var convertToUpper = false;
+    let r = '';
+    let convertToUpper = false;
     tableName = String(tableName);
 
-    for(var i = 0; i < tableName.length; i++){
-        var char = tableName.charAt(i);
+    for(let i = 0; i < tableName.length; i++){
+        let char = tableName.charAt(i);
 
         if(char == '_'){
             convertToUpper = true;
@@ -48,12 +48,12 @@ exports.tableNameToClassName = function (tableName){
  * @returns {string}
  */
 exports.tableNameToRecordName = function (tableName){
-    var r = '';
-    var convertToUpper = true;
+    let r = '';
+    let convertToUpper = true;
     tableName = String(tableName);
 
-    for(var i = 0; i < tableName.length; i++){
-        var char = tableName.charAt(i);
+    for(let i = 0; i < tableName.length; i++){
+        let char = tableName.charAt(i);
 
         if(char == '_'){
             convertToUpper = true;
@@ -97,7 +97,7 @@ exports.PhpRecordsGenerator = function(module){
  */
 exports.PhpRecordsGenerator.prototype.generateCode = function(callback){
 
-    var _this = this;
+    let _this = this;
 
     if(_this.module.hasConnection()){
         _this.module.getRecords(function(records){
@@ -121,7 +121,7 @@ exports.PhpRecordsGenerator.prototype.generateCode = function(callback){
 };
 
 exports.PhpRecordsGenerator.prototype.generateStubs = function(callback){
-    var _this = this;
+    let _this = this;
 
     if(_this.module.hasConnection()){
         _this.module.getRecords(function(records){
@@ -129,16 +129,16 @@ exports.PhpRecordsGenerator.prototype.generateStubs = function(callback){
             // If records found
             if(records.length){
 
-                var hasTs = fs.existsSync(path.dirname(_this.module.pathTs));
+                let hasTs = fs.existsSync(path.dirname(_this.module.pathTs));
 
-                for(var i in records){
-                    var record = records[i];
-                    var filename = exports.PhpRecordsGenerator.recordNameOf(record) + '.php';
-                    var filenameTs = exports.PhpRecordsGenerator.recordNameOf(record) + '.ts';
-                    var file = path.join(_this.module.pathPhp, filename);
-                    var fileTs = path.join(_this.module.pathTs, 'records', filenameTs);
-                    var stub = _this.stubOf(record);
-                    var stubTs = exports.TsRecordsGenerator.stubOf(record);
+                for(let i in records){
+                    let record = records[i];
+                    let filename = exports.PhpRecordsGenerator.recordNameOf(record) + '.php';
+                    let filenameTs = exports.PhpRecordsGenerator.recordNameOf(record) + '.ts';
+                    let file = path.join(_this.module.pathPhp, filename);
+                    let fileTs = path.join(_this.module.pathTs, 'records', filenameTs);
+                    let stub = _this.stubOf(record);
+                    let stubTs = exports.TsRecordsGenerator.stubOf(record);
 
                     if(!fs.existsSync(file)){
                         latte.supermkdir(path.dirname(file));
@@ -175,10 +175,10 @@ exports.PhpRecordsGenerator.prototype.recordsCode = function(tables, callback){
         throw "tables must be an array";
     }
 
-    var served = 0;
-    var code = '<' + '?' + 'php ';
+    let served = 0;
+    let code = '<' + '?' + 'php ';
 
-    for(var i = 0; i < tables.length; i++){
+    for(let i = 0; i < tables.length; i++){
 
         this.recordCodeOf(tables[i], function(recordCode){
             code += '\n' + recordCode;
@@ -200,13 +200,13 @@ exports.PhpRecordsGenerator.prototype.recordsCode = function(tables, callback){
  */
 exports.PhpRecordsGenerator.prototype.recordCodeOf = function(table, callback){
 
-    var code = "class %sBase extends DataRecord{\n\t%s\n}";
-    var className = exports.tableNameToClassName(table);
-    var body  = '';
-    var module = this.module;
-    var makePairs = function(arr){
-        var r = [];
-        for(var i = 0; i < arr.length; i++){
+    let code = "class %sBase extends DataRecord{\n\t%s\n}";
+    let className = exports.tableNameToClassName(table);
+    let body  = '';
+    let module = this.module;
+    let makePairs = function(arr){
+        let r = [];
+        for(let i = 0; i < arr.length; i++){
             r.push(sprintf('"%s" => $this->%s', arr[i], arr[i]));
         }
         return r;
@@ -217,21 +217,21 @@ exports.PhpRecordsGenerator.prototype.recordCodeOf = function(table, callback){
         if(err)
             throw err;
 
-        var tableFields = [];
-        var allRows = [];
-        var primKey = [];
-        var keys = [];
-        var justFields = [];
-        var checks = [];
+        let tableFields = [];
+        let allRows = [];
+        let primKey = [];
+        let keys = [];
+        let justFields = [];
+        let checks = [];
 
         // Scan fields
-        for(var i = 0; i < rows.length; i++){
-            var field = rows[i][fields[0].name];
+        for(let i = 0; i < rows.length; i++){
+            let field = rows[i][fields[0].name];
 
-            if(rows[i]['Extra'] == 'auto_increment') {
+            if(rows[i]['Extra'] === 'auto_increment') {
                 primKey.push(field);
 
-            }else if(rows[i]['Key'] == 'PRI') {
+            }else if(rows[i]['Key'] === 'PRI') {
                 keys.push(field);
             }else {
                 justFields.push(field);
@@ -242,23 +242,23 @@ exports.PhpRecordsGenerator.prototype.recordCodeOf = function(table, callback){
         }
 
         (function(arr){
-            for(var i = 0; i < arr.length; i++){
+            for(let i = 0; i < arr.length; i++){
                 checks.push(sprintf("isset($this->%s)", arr[i]));
             }
         })(keys.concat(primKey));
 
-        for(var i = 0; i < tableFields.length; i++){
+        for(let i = 0; i < tableFields.length; i++){
             allRows.push(sprintf("$t.%s AS '$t.%s'", tableFields[i], tableFields[i]));
         }
 
-        var fieldDeclaration =  sprintf('public $%s;', tableFields.join(', $'));
-        var all =               sprintf('public static function all($t = "%s"){ return array("%s"); }', table, allRows.join('", "'));
-        var gettable =          sprintf('public static function gettable(){ return "%s"; }', table);
-        var getautokey =        sprintf("public function getAutoKey(){ return array( %s ); }", makePairs(primKey).join(', '));
-        var getkeys =           sprintf("public function getKeys(){ return array( %s ); }", makePairs(keys).join(', '));
-        var getfields =         sprintf("public function getFields(){ return array( %s ); }", makePairs(justFields).join(', '));
-        var isinserted =        sprintf("public function isInserted(){ return %s; }", checks.length ? checks.join(' && ') : 1);
-        var getmodule =         sprintf("public function getModule(){ return '%s'; }", module.name);
+        let fieldDeclaration =  sprintf('public $%s;', tableFields.join(', $'));
+        let all =               sprintf('public static function all($t = "%s"){ return array("%s"); }', table, allRows.join('", "'));
+        let gettable =          sprintf('public static function gettable(){ return "%s"; }', table);
+        let getautokey =        sprintf("public function getAutoKey(){ return array( %s ); }", makePairs(primKey).join(', '));
+        let getkeys =           sprintf("public function getKeys(){ return array( %s ); }", makePairs(keys).join(', '));
+        let getfields =         sprintf("public function getFields(){ return array( %s ); }", makePairs(justFields).join(', '));
+        let isinserted =        sprintf("public function isInserted(){ return %s; }", checks.length ? checks.join(' && ') : 1);
+        let getmodule =         sprintf("public function getModule(){ return '%s'; }", module.name);
 
         body = [fieldDeclaration, all, gettable, getautokey, getkeys, getfields, getmodule, isinserted].join('\n\t');
 
@@ -273,9 +273,9 @@ exports.PhpRecordsGenerator.prototype.recordCodeOf = function(table, callback){
  * @return string
  */
 exports.PhpRecordsGenerator.prototype.stubOf = function(table){
-    var code = "/**\n * Stub generated by xlatte\n */\nclass %s extends %sBase{\n\n}";
-    var className = exports.PhpRecordsGenerator.recordNameOf(table);
-    var baseName = exports.tableNameToClassName(table);
+    let code = "/**\n * Stub generated by xlatte\n */\nclass %s extends %sBase{\n\n}";
+    let className = exports.PhpRecordsGenerator.recordNameOf(table);
+    let baseName = exports.tableNameToClassName(table);
     return sprintf(code, className, baseName);
 };
 
@@ -315,8 +315,8 @@ exports.TsRecordsGenerator = function(module){
  */
 exports.TsRecordsGenerator.prototype.generateCode = function(phpClassesPath, callback){
 
-    var code = '';
-    var _this = this;
+    let code = '';
+    let _this = this;
 
     if(!this.module.hasConnection()){
         callback.call(null);
@@ -324,8 +324,8 @@ exports.TsRecordsGenerator.prototype.generateCode = function(phpClassesPath, cal
     }
 
     //region Support methods
-    var findRecordName = function(serverClasses, recordName){
-        for(var i in serverClasses){
+    let findRecordName = function(serverClasses, recordName){
+        for(let i in serverClasses){
             if(typeof i === 'string'){
                 if(i.replace('_', '').toLowerCase() == recordName.replace('_', '').toLowerCase()){
 //                    console.log(sprintf("%s => %s", recordName, i))
@@ -342,15 +342,15 @@ exports.TsRecordsGenerator.prototype.generateCode = function(phpClassesPath, cal
         // Get php classes info
         _this.getPhpClassesInfo(phpClassesPath, function(phpClasses){
 
-            var attendedClasses = {};
-            var served = 0;
+            let attendedClasses = {};
+            let served = 0;
 
             // Scan records
-            for(var i = 0; i < records.length; i++){
+            for(let i = 0; i < records.length; i++){
 
                 // Get class name for table
-                var className = exports.tableNameToClassName(records[i]);
-                var recordName = findRecordName(phpClasses, records[i]);
+                let className = exports.tableNameToClassName(records[i]);
+                let recordName = findRecordName(phpClasses, records[i]);
 
                 // Mark record as attended
                 attendedClasses[recordName] = true;
@@ -363,7 +363,7 @@ exports.TsRecordsGenerator.prototype.generateCode = function(phpClassesPath, cal
                     if(++served == records.length){
 
                         // Check for undispatched classes
-                        for(var i in phpClasses){
+                        for(let i in phpClasses){
                             if(typeof attendedClasses[i] == 'undefined') {
                                 code += _this.classCodeOf(phpClasses[i]);
                             }
@@ -377,7 +377,7 @@ exports.TsRecordsGenerator.prototype.generateCode = function(phpClassesPath, cal
 
             if(!records.length) {
                 // Check for undispatched classes
-                for(var i in phpClasses){
+                for(let i in phpClasses){
                     if(typeof attendedClasses[i] == 'undefined') {
                         code += _this.classCodeOf(phpClasses[i]);
                     }
@@ -400,13 +400,13 @@ exports.TsRecordsGenerator.prototype.generateCode = function(phpClassesPath, cal
  */
 exports.TsRecordsGenerator.prototype.getPhpClassesInfo = function(classesPath, callback){
 
-    var phpClasses = {};
+    let phpClasses = {};
 
-    var files = fs.existsSync(classesPath) ?  latte.walkSync(classesPath, '.php') : [];
+    let files = fs.existsSync(classesPath) ?  latte.walkSync(classesPath, '.php') : [];
 
-    for(var i = 0; i < files.length; i++){
+    for(let i = 0; i < files.length; i++){
 
-        var info = ref.phpFileInfo(files[i]);
+        let info = ref.phpFileInfo(files[i]);
 
         if(info && info.name) {
             phpClasses[info.name] = info;
@@ -430,11 +430,11 @@ exports.TsRecordsGenerator.getTsTypeOf = function(mySqlType){
         return 'any';
     }
 
-    var parts = mySqlType.split('(');
-    var name = parts[0].toLowerCase();
-    var size = parts.length > 1 ? parseInt(parts[1].replace(')', '')) : -1;
+    let parts = mySqlType.split('(');
+    let name = parts[0].toLowerCase();
+    let size = parts.length > 1 ? parseInt(parts[1].replace(')', '')) : -1;
 
-    var d = {
+    let d = {
         'bit': 'number',
         'tinyint': 'number',
         'bool': 'number',
@@ -483,32 +483,32 @@ exports.TsRecordsGenerator.getTsTypeOf = function(mySqlType){
  */
 exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo, recordName, callback){
 
-    var codeResult = '';
-    var _this = this;
+    let codeResult = '';
+    let _this = this;
 
     //region Support Methods
-    var printout = function(str){ codeResult += str + '\n' };
+    let printout = function(str){ codeResult += str + '\n' };
 
-    var hasAttribute = function(atts, attribute){
-        for(var i in atts)
+    let hasAttribute = function(atts, attribute){
+        for(let i in atts)
             if(atts[i] == attribute)
                 return true;
         return false;
     };
 
-    var isStatic = function(atts){
+    let isStatic = function(atts){
         return hasAttribute(atts, 'static');
     }
 
-    var isPrivate = function(atts){
+    let isPrivate = function(atts){
         return hasAttribute(atts, 'private');
     }
 
-    var isRemote = function(atts){
+    let isRemote = function(atts){
         return hasAttribute(atts, 'remote');
     }
 
-    var resolveType = function(type){
+    let resolveType = function(type){
 
         if(typeof type == 'string') {
             type = type.replace("=", '').replace("?", '');
@@ -537,25 +537,25 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
         return 'any';
     };
 
-    var dumpMethodCode = function(recordName, name, method){
+    let dumpMethodCode = function(recordName, name, method){
 
         if(!isRemote(method.attributes)) return;
 
-        var stic = '';
-        var pvt = '';
-        var params = [];
-        var paramParams = [];
-        var idr = isStatic(method.attributes) ? '' :  ", this.recordId";
-        var generic = "<" + (method.returns || 'any') + ">";
+        let stic = '';
+        let pvt = '';
+        let params = [];
+        let paramParams = [];
+        let idr = isStatic(method.attributes) ? '' :  ", this.recordId";
+        let generic = "<" + (method.returns || 'any') + ">";
 
         if(isStatic(method.attributes)) stic = 'static ';
         if(isPrivate(method.attributes)) pvt = 'private ';
 
-        for(var param in method.params){
-            var paramName = param.replace('$', '');
-            var indexOfSpace = paramName.indexOf(' ');
-            var paramType = resolveType(method.params[param].type) || 'any';
-            var initer = '';
+        for(let param in method.params){
+            let paramName = param.replace('$', '');
+            let indexOfSpace = paramName.indexOf(' ');
+            let paramType = resolveType(method.params[param].type) || 'any';
+            let initer = '';
 
             if(indexOfSpace > 0){
                 initer = paramName.substr(indexOfSpace);
@@ -577,12 +577,12 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
 
     this.module.query(sprintf("DESCRIBE `%s`", table), function(err, tableRows){
 
-        var fieldNames = '';
-        var className = exports.tableNameToClassName(table);
-        var recordData = phpClassInfo;
-        var getFieldsBuffer = [];
-        var getFieldTypesBuffer = [];
-        var nativeTypes = {};
+        let fieldNames = '';
+        let className = exports.tableNameToClassName(table);
+        let recordData = phpClassInfo;
+        let getFieldsBuffer = [];
+        let getFieldTypesBuffer = [];
+        let nativeTypes = {};
 
 
         printout("\texport class " + className + 'Base extends DataRecord{');
@@ -592,12 +592,12 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
         printout("\n\t\t/* Name of Module where record lives */");
         printout("\t\t_moduleName: string = '" + _this.module.name + "';");
 
-        for(var j = 0; j < tableRows.length; j++){
+        for(let j = 0; j < tableRows.length; j++){
 
-            var row = tableRows[j];
-            var f = row.Field;
-            var fcamel = f.charAt(0).toUpperCase() + f.substr(1);
-            var tsType = exports.TsRecordsGenerator.getTsTypeOf(row.Type);
+            let row = tableRows[j];
+            let f = row.Field;
+            let fcamel = f.charAt(0).toUpperCase() + f.substr(1);
+            let tsType = exports.TsRecordsGenerator.getTsTypeOf(row.Type);
             fieldNames += f + ": this." + f + "" + (j == tableRows.length - 1 ? '' : ', ');
 
             nativeTypes[f] = row.Type;
@@ -621,7 +621,7 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
             printout("\t\t * Gets or sets the value of the " + f + " field of type " + row.Type);
             printout("\t\t */");
             printout("\t\tset " + f + "(value: " + tsType + "){");
-            printout("\t\t\tvar changed: boolean = value !== this._" + f);
+            printout("\t\t\tlet changed: boolean = value !== this._" + f);
             printout("\t\t\tthis._" + f + " = value;");
             printout("\t\t\tif(changed){ this.on" + fcamel +"Changed(); }");
             printout("\t\t}");
@@ -676,7 +676,7 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
         printout(sprintf("\n\t\tstatic nativeTypes = %s;", JSON.stringify(nativeTypes)));
 
         if(recordData && recordData.methods){
-            for(var method in recordData.methods){
+            for(let method in recordData.methods){
                 dumpMethodCode.call(_this, recordName, method, recordData.methods[method]);
             }
         }
@@ -700,20 +700,20 @@ exports.TsRecordsGenerator.prototype.recordCodeOf = function(table, phpClassInfo
  */
 exports.TsRecordsGenerator.prototype.classCodeOf = function(phpClassInfo){
 
-    var codeResult = '';
+    let codeResult = '';
 
     //region Support Methods
-    var printout = function(str){ codeResult += str + '\n' };
+    let printout = function(str){ codeResult += str + '\n' };
 
-    var hasAttribute = function(atts, attribute){
-        for(var i in atts)
+    let hasAttribute = function(atts, attribute){
+        for(let i in atts)
             if(atts[i] == attribute)
                 return true;
         return false;
     };
 
-    var hasRemoteMethods = function(phpClassInfo){
-        for(var m in phpClassInfo.methods){
+    let hasRemoteMethods = function(phpClassInfo){
+        for(let m in phpClassInfo.methods){
             if(isRemote(phpClassInfo.methods[m].attributes))
                 return true;
 
@@ -721,19 +721,19 @@ exports.TsRecordsGenerator.prototype.classCodeOf = function(phpClassInfo){
         return false;
     }
 
-    var isStatic = function(atts){
+    let isStatic = function(atts){
         return hasAttribute(atts, 'static');
     }
 
-    var isPrivate = function(atts){
+    let isPrivate = function(atts){
         return hasAttribute(atts, 'private');
     }
 
-    var isRemote = function(atts){
+    let isRemote = function(atts){
         return hasAttribute(atts, 'remote');
     }
 
-    var resolveType = function(type){
+    let resolveType = function(type){
 
         if(typeof type == 'string') {
             type = type.replace("=", '').replace("?", '');
@@ -761,25 +761,25 @@ exports.TsRecordsGenerator.prototype.classCodeOf = function(phpClassInfo){
         return 'any';
     };
 
-    var dumpMethodCode = function(recordName, name, method){
+    let dumpMethodCode = function(recordName, name, method){
 
         if(!isRemote(method.attributes)) return;
 
-        var stic = '';
-        var pvt = '';
-        var params = [];
-        var paramParams = [];
-        var idr = isStatic(method.attributes) ? '' :  ", this.recordId";
-        var generic = "<" + (method.returns || 'any') + ">";
+        let stic = '';
+        let pvt = '';
+        let params = [];
+        let paramParams = [];
+        let idr = isStatic(method.attributes) ? '' :  ", this.recordId";
+        let generic = "<" + (method.returns || 'any') + ">";
 
         if(isStatic(method.attributes)) stic = 'static ';
         if(isPrivate(method.attributes)) pvt = 'private ';
 
-        for(var param in method.params){
-            var paramName = param.replace('$', '');
-            var indexOfSpace = paramName.indexOf(' ');
-            var paramType = resolveType(method.params[param].type) || 'any';
-            var initer = '';
+        for(let param in method.params){
+            let paramName = param.replace('$', '');
+            let indexOfSpace = paramName.indexOf(' ');
+            let paramType = resolveType(method.params[param].type) || 'any';
+            let initer = '';
 
             if(indexOfSpace > 0){
                 initer = paramName.substr(indexOfSpace);
@@ -808,7 +808,7 @@ exports.TsRecordsGenerator.prototype.classCodeOf = function(phpClassInfo){
     printout("\t\t */");
     printout("\texport class " + phpClassInfo.name + '{');
 
-    for(var method in phpClassInfo.methods){
+    for(let method in phpClassInfo.methods){
         dumpMethodCode.call(this, phpClassInfo.name, method, phpClassInfo.methods[method]);
     }
 
@@ -818,17 +818,17 @@ exports.TsRecordsGenerator.prototype.classCodeOf = function(phpClassInfo){
 }
 
 exports.TsRecordsGenerator.stubOf = function(table){
-    var code = "/**\n * Generated by xlatte\n */\nmodule latte{\n\n\t/**\n\t * Record for table %s\n\t */\n\texport class %s extends %sBase{\n%s\n\t}\n}";
-    var className = exports.PhpRecordsGenerator.recordNameOf(table);
-    var baseName = exports.tableNameToClassName(table);
-    var regions = [
+    let code = "/**\n * Generated by xlatte\n */\nmodule latte{\n\n\t/**\n\t * Record for table %s\n\t */\n\texport class %s extends %sBase{\n%s\n\t}\n}";
+    let className = exports.PhpRecordsGenerator.recordNameOf(table);
+    let baseName = exports.tableNameToClassName(table);
+    let regions = [
         "\n\t\t//region Static\n\t\t//endregion\n",
         "\n\t\t//region Fields\n\t\t//endregion\n",
         "\n\t\t//region Private Methods\n\t\t//endregion\n",
         "\n\t\t//region Events\n\t\t//endregion\n",
         "\n\t\t//region Properties\n\t\t//endregion\n",
         ];
-    var r = sprintf(code, table, className, baseName, regions.join('\n'));
+    let r = sprintf(code, table, className, baseName, regions.join('\n'));
     return r;
 };
 
@@ -837,12 +837,12 @@ exports.TsRecordsGenerator.stubOf = function(table){
 /**
  * Sprintf for javascript
  *
- * var a = sprintf("%s = %s", "Hello", "World"); // a is "Hello = World"
+ * let a = sprintf("%s = %s", "Hello", "World"); // a is "Hello = World"
  */
 function sprintf(){
-    var arg = 1, format = arguments[0], cur, next, result = [];
+    let arg = 1, format = arguments[0], cur, next, result = [];
 
-    for(var i = 0; i < format.length; i++){
+    for(let i = 0; i < format.length; i++){
 
         cur = format.substr(i, 1);
         next = i == format.length - 1 ? '' : format.substr(i + 1, 1);
