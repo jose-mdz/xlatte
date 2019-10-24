@@ -2,16 +2,16 @@
  * Created by josemanuel on 9/14/16.
  * Compiles a latte module
  */
-var css = require('./latte-css');
-var ts =  require('./latte-ts');
-var latte =  require('./latte');
-var path = require('path');
-var strings = require('./latte-strings');
-var lmodule = require('./latte-module');
-var records = require('./latte-records');
-var fs = require('fs');
-var io = require('./src/FileInfo');
-var FileInfo = io.FileInfo;
+const css = require('./latte-css');
+const ts =  require('./latte-ts');
+const latte =  require('./latte');
+const path = require('path');
+const strings = require('./latte-strings');
+const lmodule = require('./latte-module');
+const records = require('./latte-records');
+const fs = require('fs');
+const io = require('./src/FileInfo');
+const FileInfo = io.FileInfo;
 
 exports.compileStack = [];
 exports.compileRefs = {};
@@ -80,7 +80,7 @@ exports._addToStack = function(module_name){
         config = (new FileInfo("xlatte.json")).readAsJSON();
 
     }else {
-        echo("No xlatte.json present. Using default configuration.");
+        console.log("No xlatte.json present. Using default configuration.");
     }
 
     //endregion

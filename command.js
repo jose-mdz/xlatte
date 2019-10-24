@@ -6,13 +6,13 @@
 
 //region Argument check
 
-var module_name;
+let module_name;
 
-for(var i = 2; i < process.argv.length; i++){
+for(let i = 2; i < process.argv.length; i++){
 
-    var param = process.argv[i].toLowerCase();
+    let param = process.argv[i].toLowerCase();
 
-    if(param.charAt(0) == '-'){
+    if(param.charAt(0) === '-'){
 
         if(param === '--minimize') {
             global.minimize = true;
@@ -20,12 +20,12 @@ for(var i = 2; i < process.argv.length; i++){
         }else if(param === '--verbose') {
             global.verbose  = true;
 
-        }else if(param == '--release') {
+        }else if(param === '--release') {
             global.release = true;
 
-        }else if(param == '--recordsany') {
+        }else if(param === '--recordsany') {
             global.recordsAny = true;
-        }else if(param == '--force'){
+        }else if(param === '--force'){
             global.force = true;
         }
     }else {
@@ -52,16 +52,16 @@ if(typeof module_name == 'undefined' || module_name.indexOf('--') === 0){
 }
 //endregion
 
-var compiler = require('./latte-compiler');
+let compiler = require('./latte-compiler');
 
 if(module_name) {
 
-    var stack = compiler.makeCompileStack(module_name);
+    let stack = compiler.makeCompileStack(module_name);
 
     // Compiles the next entry of the stack
-    var dispatch = function(){
+    let dispatch = function(){
         if(stack.length > 0) {
-            var module_name = stack.pop();
+            let module_name = stack.pop();
             compiler.compile(module_name, function(){
                 // console.log("Compiled " +  module_name + ".");
                 dispatch(); });
