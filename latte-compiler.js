@@ -271,6 +271,12 @@ exports.compile = function(module_name, callback){
         {
             name: "PHP Records",
             code: function(callback){
+
+                if(global.doRecords !== true) {
+                    callback();
+                    return;
+                }
+
                 var phpGenerator = new records.PhpRecordsGenerator(module);
                 phpGenerator.generateCode(function(phpCode){
 
@@ -284,6 +290,11 @@ exports.compile = function(module_name, callback){
         {
             name: "TypeScript Records",
             code: function(callback){
+
+                if(global.doRecords !== true) {
+                    callback();
+                    return;
+                }
                 var tsGenerator = new records.TsRecordsGenerator(module);
                 tsGenerator.generateCode(phpPath, function(tsCode){
                     if('string' == typeof tsCode && tsCode.trim().length > 0){
@@ -297,6 +308,11 @@ exports.compile = function(module_name, callback){
         {
             name: "Records Stubs",
             code: function(callback){
+                if(global.doRecords !== true) {
+                    callback();
+                    return;
+                }
+
                 var phpGenerator = new records.PhpRecordsGenerator(module);
                 phpGenerator.generateStubs(function(){
                     callback();

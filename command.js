@@ -25,6 +25,10 @@ for(let i = 2; i < process.argv.length; i++){
 
         }else if(param === '--recordsany') {
             global.recordsAny = true;
+
+        }else if(param === '--records'){
+            global.doRecords = true;
+
         }else if(param === '--force'){
             global.force = true;
         }
