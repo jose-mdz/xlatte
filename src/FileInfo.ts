@@ -1,12 +1,11 @@
-/// <reference path="node.d.ts" />
-/// <reference path="cheerio.d.ts" />
-/// <reference path="mysql.d.ts" />
 
-import fs               = require('fs');
-import path             = require('path');
-import child_process    = require('child_process');
-import cheerio          = require('cheerio');
-import mysql            = require('mysql');
+// import fs               = require('fs');
+// import path             = require('path');
+// import child_process    = require('child_process');
+
+import * as path from "path";
+import * as fs from "fs";
+import * as child_process from "child_process";
 
 /**
  * sprintf for only %s strings
@@ -279,7 +278,7 @@ export class FileInfo{
      * Deletes the file
      */
     unlink(){
-        fs.unlink(this.path);
+        fs.unlinkSync(this.path);
     }
 
     /**

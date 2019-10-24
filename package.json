@@ -1,6 +1,6 @@
 {
   "name": "xlatte",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "description": "Compiles latte projects",
   "main": "index.js",
   "bin": "./command.js",
@@ -19,9 +19,9 @@
     "MVC"
   ],
   "dependencies": {
-    "cheerio": "latest",
-    "mysql": "latest",
-    "typescript": "latest",
+    "cheerio": "^1.0.0-rc.3",
+    "mysql": "^2.17.1",
+    "typescript": "^3.6.4",
     "user": "0.0.0"
   },
   "author": "Jose Menendez Poo <menendezpoo@gmail.com> (http://menendezpoo.com)",
