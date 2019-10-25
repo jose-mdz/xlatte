@@ -248,7 +248,7 @@ exports.PhpRecordsGenerator.prototype.recordCodeOf = function(table, callback){
         })(keys.concat(primKey));
 
         for(let i = 0; i < tableFields.length; i++){
-            allRows.push(sprintf("`$t`.%s AS '$t.%s'", tableFields[i], tableFields[i]));
+            allRows.push(sprintf("`$t`.`%s` AS '$t.%s'", tableFields[i], tableFields[i]));
         }
 
         let fieldDeclaration =  sprintf('public $%s;', tableFields.join(', $'));
