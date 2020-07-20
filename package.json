@@ -20,8 +20,8 @@
   ],
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
-    "mysql": "^2.17.1",
-    "typescript": "^3.6.4",
+    "mysql": "^2.18.1",
+    "typescript": "^3.9.7",
     "user": "0.0.0"
   },
   "author": "Jose Menendez Poo <menendezpoo@gmail.com> (http://menendezpoo.com)",
